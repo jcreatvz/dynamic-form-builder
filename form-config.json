@@ -7,8 +7,8 @@
     "layout": "single"
   },
   "submission": {
-    "type": "googleSheets",
-    "googleEndpoint": "https://script.google.com/macros/s/AKfycbyclQC53FX8hdanb_uR-bSuoF4-kD9BUeLzdFmPaCyCfKoiFFP5rxNGRjJfXArKTXezqA/exec"
+    "type": "local",
+    "googleEndpoint": ""
   },
   "fields": [
     {
