@@ -2,6 +2,10 @@
 
 A static, GitHub Pages-ready form builder and renderer.
 
+Author: JC Lutao
+
+Live site: https://jcreatvz.github.io/dynamic-form-builder/
+
 ## Pages
 
 - `index.html` - project entry page
