@@ -7,8 +7,8 @@
     "layout": "single"
   },
   "submission": {
-    "type": "local",
-    "googleEndpoint": ""
+    "type": "googleSheets",
+    "googleEndpoint": "https://script.google.com/macros/s/AKfycbyclQC53FX8hdanb_uR-bSuoF4-kD9BUeLzdFmPaCyCfKoiFFP5rxNGRjJfXArKTXezqA/exec"
   },
   "fields": [
     {
@@ -28,29 +28,17 @@
       "required": true
     },
     {
-      "id": "phone",
-      "type": "tel",
-      "label": "Phone",
-      "placeholder": "(555) 123-4567",
-      "helper": "Optional, but helpful if you prefer a call.",
-      "required": false
-    },
-    {
       "id": "service",
       "type": "select",
       "label": "Service Needed",
       "placeholder": "Choose one",
       "helper": "",
       "required": true,
-      "options": ["Website", "Automation", "Branding", "Consulting"]
-    },
-    {
-      "id": "budget",
-      "type": "radio",
-      "label": "Estimated Budget",
-      "helper": "",
-      "required": true,
-      "options": ["Under $2,500", "$2,500 - $7,500", "$7,500+"]
+      "options": [
+        "Website",
+        "Automation",
+        "Branding"
+      ]
     },
     {
       "id": "details",
