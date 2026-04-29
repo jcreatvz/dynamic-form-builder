@@ -26,7 +26,9 @@
     submissionType: document.getElementById("submissionType"),
     googleEndpoint: document.getElementById("googleEndpoint"),
     googleEndpointRow: document.getElementById("googleEndpointRow"),
+    previewDraftBtn: document.getElementById("previewDraftBtn"),
     loadPublishedConfigBtn: document.getElementById("loadPublishedConfigBtn"),
+    clearDraftCacheBtn: document.getElementById("clearDraftCacheBtn"),
     exportSubmissionsBtn: document.getElementById("exportSubmissionsBtn"),
     builderPreviewTitle: document.getElementById("builderPreviewTitle"),
     builderPreview: document.getElementById("builderPreview"),
@@ -82,7 +84,9 @@
     nodes.exportConfigBtn.addEventListener("click", exportConfig);
     nodes.importConfigBtn.addEventListener("click", () => nodes.configFileInput.click());
     nodes.configFileInput.addEventListener("change", importConfig);
+    nodes.previewDraftBtn.addEventListener("click", previewDraft);
     nodes.loadPublishedConfigBtn.addEventListener("click", loadPublishedConfig);
+    nodes.clearDraftCacheBtn.addEventListener("click", clearDraftCache);
     nodes.exportSubmissionsBtn.addEventListener("click", exportLocalSubmissions);
     nodes.resetConfigBtn.addEventListener("click", () => {
       config = normalizeConfig(clone(defaultConfig));
@@ -103,6 +107,17 @@
     nodes.googleEndpoint.value = config.submission.googleEndpoint;
     nodes.googleEndpointRow.hidden = config.submission.type !== "googleSheets";
     nodes.builderPreviewTitle.textContent = config.title;
+  }
+
+  function readSettingsIntoConfig() {
+    config.title = nodes.formTitle.value.trim() || "Untitled Form";
+    config.description = nodes.formDescription.value.trim();
+    config.submitText = nodes.submitText.value.trim() || "Submit";
+    config.theme.accentColor = nodes.accentColor.value;
+    config.theme.layout = nodes.layoutMode.value;
+    config.submission.type = nodes.submissionType.value;
+    config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
+    config = normalizeConfig(config);
   }
 
   function addField(type, label) {
@@ -134,6 +149,13 @@
     config = normalizeConfig(config);
     saveConfig(config);
     renderAll();
+  }
+
+  function previewDraft() {
+    readSettingsIntoConfig();
+    saveConfig(config);
+    const stamp = Date.now();
+    window.location.href = `form.html?source=local&t=${stamp}`;
   }
 
   function renderAll() {
@@ -336,6 +358,15 @@
     } catch (error) {
       showToast("Could not load published form-config.json.");
     }
+  }
+
+  function clearDraftCache() {
+    localStorage.removeItem(window.FormStudio.STORAGE_KEY);
+    config = normalizeConfig(clone(defaultConfig));
+    selectedId = config.fields[0] ? config.fields[0].id : null;
+    saveConfig(config);
+    renderAll();
+    showToast("Draft cache cleared.");
   }
 
   function importConfig(event) {

@@ -22,7 +22,7 @@ Live site: https://jcreatvz.github.io/dynamic-form-builder/
 5. Replace `form-config.json` in the repo with the exported file.
 6. Push to publish the change on GitHub Pages.
 
-The builder saves draft config to the browser. The public `form.html` page uses the published `form-config.json`; `form.html?source=local` previews the current browser draft.
+The builder saves draft config to the browser. The public `form.html` page uses the published `form-config.json`; Preview Draft opens `form.html?source=local` after saving the current draft. If the browser draft gets stale, use `Clear Draft Cache` in the builder.
 
 For a local preview that matches GitHub Pages file loading:
 
