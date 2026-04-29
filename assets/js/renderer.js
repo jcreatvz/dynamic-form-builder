@@ -5,7 +5,8 @@
     renderForm,
     collectValues,
     validateValues,
-    saveSubmission
+    saveSubmission,
+    submitToGoogleSheets
   } = window.FormStudio;
 
   const container = document.getElementById("publicForm");
@@ -43,7 +44,7 @@
     render();
   }
 
-  function submitForm(event) {
+  async function submitForm(event) {
     event.preventDefault();
     const form = event.currentTarget;
     values = collectValues(form, config);
@@ -52,8 +53,26 @@
       return;
     }
 
-    saveSubmission(values);
-    showSuccess();
+    const submitButton = form.querySelector(".submit-button, .form-actions .button.primary");
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Sending...";
+    }
+
+    try {
+      if (config.submission.type === "googleSheets") {
+        await submitToGoogleSheets(config, values);
+      }
+
+      saveSubmission(values);
+      showSuccess(config.submission.type);
+    } catch (error) {
+      showToast(error.message || "Submission failed. Please try again.");
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = config.submitText;
+      }
+    }
   }
 
   function showLoading() {
@@ -77,12 +96,15 @@
     `;
   }
 
-  function showSuccess() {
+  function showSuccess(type) {
+    const message = type === "googleSheets"
+      ? "Your response was sent to the connected Google Sheet."
+      : "Your response was saved locally in this browser and can be exported as CSV from the builder.";
     container.innerHTML = `
       <div class="dynamic-form result-state success-state">
-        <div class="success-mark">✓</div>
+        <div class="success-mark">OK</div>
         <h1>Submission received</h1>
-        <p>This first version stores the submission in this browser for demo purposes. Google Sheets or CSV storage can be connected next.</p>
+        <p>${message}</p>
         <button class="button primary" id="submitAnother" type="button">Submit Another</button>
       </div>
     `;

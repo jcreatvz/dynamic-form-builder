@@ -60,6 +60,26 @@
             </select>
           </label>
         </div>
+
+        <div class="panel-heading settings-heading">
+          <p class="eyebrow">Storage</p>
+          <h2>Submissions</h2>
+        </div>
+        <div class="settings-stack">
+          <label>
+            <span>Storage Mode</span>
+            <select id="submissionType">
+              <option value="local">Local CSV</option>
+              <option value="googleSheets">Google Sheets</option>
+            </select>
+          </label>
+          <label id="googleEndpointRow">
+            <span>Apps Script Web App URL</span>
+            <input id="googleEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+          </label>
+          <p class="field-helper">Local CSV stores demo submissions in this browser. Google Sheets requires the Apps Script URL from the setup guide.</p>
+          <button class="button subtle" id="exportSubmissionsBtn" type="button">Export Local CSV</button>
+        </div>
       </aside>
 
       <section class="builder-preview" aria-label="Live preview">

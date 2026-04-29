@@ -7,7 +7,9 @@
     normalizeConfig,
     saveConfig,
     loadSavedConfig,
-    renderForm
+    renderForm,
+    loadSubmissions,
+    submissionsToCsv
   } = window.FormStudio;
 
   let config = normalizeConfig(loadSavedConfig() || defaultConfig);
@@ -20,6 +22,10 @@
     submitText: document.getElementById("submitText"),
     accentColor: document.getElementById("accentColor"),
     layoutMode: document.getElementById("layoutMode"),
+    submissionType: document.getElementById("submissionType"),
+    googleEndpoint: document.getElementById("googleEndpoint"),
+    googleEndpointRow: document.getElementById("googleEndpointRow"),
+    exportSubmissionsBtn: document.getElementById("exportSubmissionsBtn"),
     builderPreviewTitle: document.getElementById("builderPreviewTitle"),
     builderPreview: document.getElementById("builderPreview"),
     fieldList: document.getElementById("fieldList"),
@@ -59,17 +65,22 @@
       config.submitText = nodes.submitText.value.trim() || "Submit";
       config.theme.accentColor = nodes.accentColor.value;
       config.theme.layout = nodes.layoutMode.value;
+      config.submission.type = nodes.submissionType.value;
+      config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
       persistAndRender();
     };
 
-    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode]
+    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.submissionType, nodes.googleEndpoint]
       .forEach((input) => input.addEventListener("input", update));
+
+    nodes.submissionType.addEventListener("change", update);
   }
 
   function bindActions() {
     nodes.exportConfigBtn.addEventListener("click", exportConfig);
     nodes.importConfigBtn.addEventListener("click", () => nodes.configFileInput.click());
     nodes.configFileInput.addEventListener("change", importConfig);
+    nodes.exportSubmissionsBtn.addEventListener("click", exportLocalSubmissions);
     nodes.resetConfigBtn.addEventListener("click", () => {
       config = normalizeConfig(clone(defaultConfig));
       selectedId = config.fields[0] ? config.fields[0].id : null;
@@ -85,6 +96,9 @@
     nodes.submitText.value = config.submitText;
     nodes.accentColor.value = config.theme.accentColor;
     nodes.layoutMode.value = config.theme.layout;
+    nodes.submissionType.value = config.submission.type;
+    nodes.googleEndpoint.value = config.submission.googleEndpoint;
+    nodes.googleEndpointRow.hidden = config.submission.type !== "googleSheets";
     nodes.builderPreviewTitle.textContent = config.title;
   }
 
@@ -291,6 +305,22 @@
     link.click();
     URL.revokeObjectURL(link.href);
     showToast("Config exported.");
+  }
+
+  function exportLocalSubmissions() {
+    const submissions = loadSubmissions();
+    if (!submissions.length) {
+      showToast("No local submissions to export yet.");
+      return;
+    }
+
+    const blob = new Blob([submissionsToCsv(config, submissions)], { type: "text/csv;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "submissions.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showToast("Local submissions exported.");
   }
 
   function importConfig(event) {

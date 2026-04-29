@@ -22,6 +22,10 @@
       accentColor: "#2563eb",
       layout: "single"
     },
+    submission: {
+      type: "local",
+      googleEndpoint: ""
+    },
     fields: [
       {
         id: "full_name",
@@ -116,6 +120,10 @@
       theme: {
         accentColor: input.theme && input.theme.accentColor ? input.theme.accentColor : "#2563eb",
         layout: input.theme && input.theme.layout === "steps" ? "steps" : "single"
+      },
+      submission: {
+        type: input.submission && input.submission.type === "googleSheets" ? "googleSheets" : "local",
+        googleEndpoint: input.submission && input.submission.googleEndpoint ? String(input.submission.googleEndpoint).trim() : ""
       },
       fields: normalizedFields
     };
@@ -365,6 +373,67 @@
     localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(submissions));
   }
 
+  function loadSubmissions() {
+    try {
+      return JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || "[]");
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function csvEscape(value) {
+    if (Array.isArray(value)) return csvEscape(value.join("; "));
+    const text = value === null || value === undefined ? "" : String(value);
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  function submissionsToCsv(config, submissions) {
+    const normalized = normalizeConfig(config);
+    const headers = ["submittedAt", ...normalized.fields.map((field) => field.label || field.id)];
+    const ids = normalized.fields.map((field) => field.id);
+    const rows = submissions.map((submission) => {
+      const values = submission.values || {};
+      return [
+        submission.submittedAt || "",
+        ...ids.map((id) => values[id])
+      ];
+    });
+
+    return [headers, ...rows]
+      .map((row) => row.map(csvEscape).join(","))
+      .join("\n");
+  }
+
+  async function submitToGoogleSheets(config, values) {
+    const normalized = normalizeConfig(config);
+    const endpoint = normalized.submission.googleEndpoint;
+    if (!endpoint) {
+      throw new Error("Google Sheets endpoint is missing.");
+    }
+
+    const payload = {
+      submittedAt: new Date().toISOString(),
+      formTitle: normalized.title,
+      fields: normalized.fields.map((field) => ({
+        id: field.id,
+        label: field.label,
+        type: field.type
+      })),
+      values
+    };
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    return response;
+  }
+
   window.FormStudio = {
     STORAGE_KEY,
     fieldTypes,
@@ -378,6 +447,9 @@
     renderForm,
     collectValues,
     validateValues,
-    saveSubmission
+    saveSubmission,
+    loadSubmissions,
+    submissionsToCsv,
+    submitToGoogleSheets
   };
 })();

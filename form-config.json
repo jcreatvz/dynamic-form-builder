@@ -6,6 +6,10 @@
     "accentColor": "#2563eb",
     "layout": "single"
   },
+  "submission": {
+    "type": "local",
+    "googleEndpoint": ""
+  },
   "fields": [
     {
       "id": "full_name",
