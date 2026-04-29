@@ -18,7 +18,10 @@
   async function init() {
     showLoading();
     try {
-      config = await loadStaticConfig();
+      config = shouldUseLocalDraft() ? loadSavedConfig() : await loadStaticConfig();
+      if (!config) {
+        config = await loadStaticConfig();
+      }
       render();
     } catch (error) {
       config = loadSavedConfig();
@@ -28,6 +31,11 @@
         showError();
       }
     }
+  }
+
+  function shouldUseLocalDraft() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("source") === "local" || params.get("preview") === "draft";
   }
 
   function render() {

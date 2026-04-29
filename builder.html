@@ -19,7 +19,8 @@
         <button class="icon-button" id="exportConfigBtn" type="button" title="Export JSON" aria-label="Export JSON">
           <span aria-hidden="true">Export</span>
         </button>
-        <a class="button compact" href="form.html">Preview Page</a>
+        <a class="button compact ghost" href="form.html">Published Form</a>
+        <a class="button compact" href="form.html?source=local">Preview Draft</a>
       </nav>
     </header>
 
@@ -77,7 +78,7 @@
             <span>Apps Script Web App URL</span>
             <input id="googleEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
           </label>
-          <p class="field-helper">Local CSV stores demo submissions in this browser. Google Sheets requires the Apps Script URL from the setup guide.</p>
+          <p class="field-helper">Changes here are draft settings. Use Preview Draft to test them immediately, then Export JSON and push form-config.json to publish.</p>
           <button class="button subtle" id="loadPublishedConfigBtn" type="button">Load Published Config</button>
           <button class="button subtle" id="exportSubmissionsBtn" type="button">Export Local CSV</button>
         </div>
