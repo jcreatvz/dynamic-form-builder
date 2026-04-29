@@ -5,7 +5,6 @@
     renderForm,
     collectValues,
     validateValues,
-    saveSubmission,
     submitToGoogleSheets
   } = window.FormStudio;
 
@@ -73,12 +72,8 @@
     }
 
     try {
-      if (config.submission.type === "googleSheets") {
-        await submitToGoogleSheets(config, values);
-      }
-
-      saveSubmission(values);
-      showSuccess(config.submission.type);
+      await submitToGoogleSheets(config, values);
+      showSuccess();
     } catch (error) {
       showToast(error.message || "Submission failed. Please try again.");
       if (submitButton) {
@@ -109,15 +104,12 @@
     `;
   }
 
-  function showSuccess(type) {
-    const message = type === "googleSheets"
-      ? "Your response was sent to the connected Google Sheet."
-      : "Your response was saved locally in this browser and can be exported as CSV from the builder.";
+  function showSuccess() {
     container.innerHTML = `
       <div class="dynamic-form result-state success-state">
         <div class="success-mark">OK</div>
         <h1>Submission received</h1>
-        <p>${message}</p>
+        <p>Your response was sent to the connected Google Sheet.</p>
         <button class="button primary" id="submitAnother" type="button">Submit Another</button>
       </div>
     `;

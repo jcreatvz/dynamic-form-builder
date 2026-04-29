@@ -1,6 +1,6 @@
 # Dynamic Form Studio
 
-A static, GitHub Pages-ready form builder and renderer.
+A static, GitHub Pages-ready form builder and renderer that submits responses to Google Sheets through Google Apps Script.
 
 Author: JC Lutao
 
@@ -17,10 +17,11 @@ Live site: https://jcreatvz.github.io/dynamic-form-builder/
 
 1. Open `builder.html`.
 2. Add or edit fields.
-3. Use `Preview Draft` to test the builder's local draft immediately.
-4. Export the JSON config.
-5. Replace `form-config.json` in the repo with the exported file.
-6. Push to publish the change on GitHub Pages.
+3. Paste your Apps Script Web App URL.
+4. Use `Preview Draft` to test the builder's local draft immediately.
+5. Export the JSON config.
+6. Replace `form-config.json` in the repo with the exported file.
+7. Push to publish the change on GitHub Pages.
 
 The builder saves draft config to the browser. The public `form.html` page uses the published `form-config.json`; Preview Draft opens `form.html?source=local` after saving the current draft. If the browser draft gets stale, use `Clear Draft Cache` in the builder.
 
@@ -31,10 +32,6 @@ node local-server.js
 ```
 
 Then open `http://127.0.0.1:4173/`.
-
-## Next Integrations
-
-- Optional CSV export or protected GitHub CSV writing through a serverless endpoint.
 
 ## Google Sheets Setup
 
@@ -47,7 +44,7 @@ Then open `http://127.0.0.1:4173/`.
 7. Set `Who has access` to `Anyone`.
 8. Deploy and authorize the script.
 9. Copy the Web App URL ending in `/exec`.
-10. Open `builder.html`, set `Storage Mode` to `Google Sheets`, paste the Web App URL, then export `form-config.json`.
+10. Open `builder.html`, paste the Web App URL, then export `form-config.json`.
 11. Replace the repo's `form-config.json` with the exported file and push it.
 
 The Apps Script creates a `Submissions` tab, keeps the header row aligned to the current form fields, and appends each form response as a new row.

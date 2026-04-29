@@ -1,7 +1,5 @@
 (function () {
   const STORAGE_KEY = "dynamicFormStudio.config";
-  const SUBMISSIONS_KEY = "dynamicFormStudio.localSubmissions";
-
   const fieldTypes = [
     { type: "text", label: "Text", icon: "T" },
     { type: "email", label: "Email", icon: "@" },
@@ -23,7 +21,7 @@
       layout: "single"
     },
     submission: {
-      type: "local",
+      type: "googleSheets",
       googleEndpoint: ""
     },
     fields: [
@@ -122,7 +120,7 @@
         layout: input.theme && input.theme.layout === "steps" ? "steps" : "single"
       },
       submission: {
-        type: input.submission && input.submission.type === "googleSheets" ? "googleSheets" : "local",
+        type: "googleSheets",
         googleEndpoint: input.submission && input.submission.googleEndpoint ? String(input.submission.googleEndpoint).trim() : ""
       },
       fields: normalizedFields
@@ -367,43 +365,6 @@
     form.appendChild(actions);
   }
 
-  function saveSubmission(values) {
-    const submissions = JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || "[]");
-    submissions.push({ submittedAt: new Date().toISOString(), values });
-    localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(submissions));
-  }
-
-  function loadSubmissions() {
-    try {
-      return JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || "[]");
-    } catch (error) {
-      return [];
-    }
-  }
-
-  function csvEscape(value) {
-    if (Array.isArray(value)) return csvEscape(value.join("; "));
-    const text = value === null || value === undefined ? "" : String(value);
-    return `"${text.replace(/"/g, '""')}"`;
-  }
-
-  function submissionsToCsv(config, submissions) {
-    const normalized = normalizeConfig(config);
-    const headers = ["submittedAt", ...normalized.fields.map((field) => field.label || field.id)];
-    const ids = normalized.fields.map((field) => field.id);
-    const rows = submissions.map((submission) => {
-      const values = submission.values || {};
-      return [
-        submission.submittedAt || "",
-        ...ids.map((id) => values[id])
-      ];
-    });
-
-    return [headers, ...rows]
-      .map((row) => row.map(csvEscape).join(","))
-      .join("\n");
-  }
-
   async function submitToGoogleSheets(config, values) {
     const normalized = normalizeConfig(config);
     const endpoint = normalized.submission.googleEndpoint;
@@ -447,9 +408,6 @@
     renderForm,
     collectValues,
     validateValues,
-    saveSubmission,
-    loadSubmissions,
-    submissionsToCsv,
     submitToGoogleSheets
   };
 })();

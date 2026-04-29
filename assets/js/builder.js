@@ -8,9 +8,7 @@
     saveConfig,
     loadSavedConfig,
     loadStaticConfig,
-    renderForm,
-    loadSubmissions,
-    submissionsToCsv
+    renderForm
   } = window.FormStudio;
 
   let config = normalizeConfig(loadSavedConfig() || defaultConfig);
@@ -23,13 +21,11 @@
     submitText: document.getElementById("submitText"),
     accentColor: document.getElementById("accentColor"),
     layoutMode: document.getElementById("layoutMode"),
-    submissionType: document.getElementById("submissionType"),
     googleEndpoint: document.getElementById("googleEndpoint"),
     googleEndpointRow: document.getElementById("googleEndpointRow"),
     previewDraftBtn: document.getElementById("previewDraftBtn"),
     loadPublishedConfigBtn: document.getElementById("loadPublishedConfigBtn"),
     clearDraftCacheBtn: document.getElementById("clearDraftCacheBtn"),
-    exportSubmissionsBtn: document.getElementById("exportSubmissionsBtn"),
     builderPreviewTitle: document.getElementById("builderPreviewTitle"),
     builderPreview: document.getElementById("builderPreview"),
     fieldList: document.getElementById("fieldList"),
@@ -69,15 +65,13 @@
       config.submitText = nodes.submitText.value.trim() || "Submit";
       config.theme.accentColor = nodes.accentColor.value;
       config.theme.layout = nodes.layoutMode.value;
-      config.submission.type = nodes.submissionType.value;
+      config.submission.type = "googleSheets";
       config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
       persistAndRender();
     };
 
-    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.submissionType, nodes.googleEndpoint]
+    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.googleEndpoint]
       .forEach((input) => input.addEventListener("input", update));
-
-    nodes.submissionType.addEventListener("change", update);
   }
 
   function bindActions() {
@@ -87,7 +81,6 @@
     nodes.previewDraftBtn.addEventListener("click", previewDraft);
     nodes.loadPublishedConfigBtn.addEventListener("click", loadPublishedConfig);
     nodes.clearDraftCacheBtn.addEventListener("click", clearDraftCache);
-    nodes.exportSubmissionsBtn.addEventListener("click", exportLocalSubmissions);
     nodes.resetConfigBtn.addEventListener("click", () => {
       config = normalizeConfig(clone(defaultConfig));
       selectedId = config.fields[0] ? config.fields[0].id : null;
@@ -103,9 +96,9 @@
     nodes.submitText.value = config.submitText;
     nodes.accentColor.value = config.theme.accentColor;
     nodes.layoutMode.value = config.theme.layout;
-    nodes.submissionType.value = config.submission.type;
+    config.submission.type = "googleSheets";
     nodes.googleEndpoint.value = config.submission.googleEndpoint;
-    nodes.googleEndpointRow.hidden = config.submission.type !== "googleSheets";
+    nodes.googleEndpointRow.hidden = false;
     nodes.builderPreviewTitle.textContent = config.title;
   }
 
@@ -115,7 +108,7 @@
     config.submitText = nodes.submitText.value.trim() || "Submit";
     config.theme.accentColor = nodes.accentColor.value;
     config.theme.layout = nodes.layoutMode.value;
-    config.submission.type = nodes.submissionType.value;
+    config.submission.type = "googleSheets";
     config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
     config = normalizeConfig(config);
   }
@@ -330,22 +323,6 @@
     link.click();
     URL.revokeObjectURL(link.href);
     showToast("Config exported.");
-  }
-
-  function exportLocalSubmissions() {
-    const submissions = loadSubmissions();
-    if (!submissions.length) {
-      showToast("No local submissions to export yet.");
-      return;
-    }
-
-    const blob = new Blob([submissionsToCsv(config, submissions)], { type: "text/csv;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "submissions.csv";
-    link.click();
-    URL.revokeObjectURL(link.href);
-    showToast("Local submissions exported.");
   }
 
   async function loadPublishedConfig() {

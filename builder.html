@@ -67,21 +67,13 @@
           <h2>Submissions</h2>
         </div>
         <div class="settings-stack">
-          <label>
-            <span>Storage Mode</span>
-            <select id="submissionType">
-              <option value="local">Local CSV</option>
-              <option value="googleSheets">Google Sheets</option>
-            </select>
-          </label>
           <label id="googleEndpointRow">
             <span>Apps Script Web App URL</span>
             <input id="googleEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
           </label>
-          <p class="field-helper">Changes here are draft settings. Use Preview Draft to test them immediately, then Export JSON and push form-config.json to publish.</p>
+          <p class="field-helper">This form always submits to Google Sheets. Paste a different Apps Script URL to send responses to a different sheet/script.</p>
           <button class="button subtle" id="loadPublishedConfigBtn" type="button">Load Published Config</button>
           <button class="button subtle" id="clearDraftCacheBtn" type="button">Clear Draft Cache</button>
-          <button class="button subtle" id="exportSubmissionsBtn" type="button">Export Local CSV</button>
         </div>
       </aside>
 
