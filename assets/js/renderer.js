@@ -18,10 +18,15 @@
   async function init() {
     showLoading();
     try {
-      config = loadSavedConfig() || await loadStaticConfig();
+      config = await loadStaticConfig();
       render();
     } catch (error) {
-      showError();
+      config = loadSavedConfig();
+      if (config) {
+        render();
+      } else {
+        showError();
+      }
     }
   }
 
