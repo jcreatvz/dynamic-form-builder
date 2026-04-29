@@ -316,6 +316,12 @@
   }
 
   function exportConfig() {
+    readSettingsIntoConfig();
+    if (!config.submission.googleEndpoint) {
+      showToast("Paste an Apps Script URL before exporting.");
+      return;
+    }
+
     const blob = new Blob([JSON.stringify(normalizeConfig(config), null, 2)], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);

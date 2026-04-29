@@ -47,6 +47,14 @@
       "placeholder": "Share goals, timeline, and anything else we should know.",
       "helper": "",
       "required": false
+    },
+    {
+      "id": "text",
+      "type": "text",
+      "label": "Fuck",
+      "placeholder": "dasdad",
+      "helper": "",
+      "required": true
     }
   ]
 }
