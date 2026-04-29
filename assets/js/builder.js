@@ -7,6 +7,7 @@
     normalizeConfig,
     saveConfig,
     loadSavedConfig,
+    loadStaticConfig,
     renderForm,
     loadSubmissions,
     submissionsToCsv
@@ -25,6 +26,7 @@
     submissionType: document.getElementById("submissionType"),
     googleEndpoint: document.getElementById("googleEndpoint"),
     googleEndpointRow: document.getElementById("googleEndpointRow"),
+    loadPublishedConfigBtn: document.getElementById("loadPublishedConfigBtn"),
     exportSubmissionsBtn: document.getElementById("exportSubmissionsBtn"),
     builderPreviewTitle: document.getElementById("builderPreviewTitle"),
     builderPreview: document.getElementById("builderPreview"),
@@ -80,6 +82,7 @@
     nodes.exportConfigBtn.addEventListener("click", exportConfig);
     nodes.importConfigBtn.addEventListener("click", () => nodes.configFileInput.click());
     nodes.configFileInput.addEventListener("change", importConfig);
+    nodes.loadPublishedConfigBtn.addEventListener("click", loadPublishedConfig);
     nodes.exportSubmissionsBtn.addEventListener("click", exportLocalSubmissions);
     nodes.resetConfigBtn.addEventListener("click", () => {
       config = normalizeConfig(clone(defaultConfig));
@@ -321,6 +324,18 @@
     link.click();
     URL.revokeObjectURL(link.href);
     showToast("Local submissions exported.");
+  }
+
+  async function loadPublishedConfig() {
+    try {
+      config = normalizeConfig(await loadStaticConfig());
+      selectedId = config.fields[0] ? config.fields[0].id : null;
+      saveConfig(config);
+      renderAll();
+      showToast("Published config loaded into builder.");
+    } catch (error) {
+      showToast("Could not load published form-config.json.");
+    }
   }
 
   function importConfig(event) {
