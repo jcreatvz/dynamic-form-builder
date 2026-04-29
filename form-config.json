@@ -1,0 +1,60 @@
+{
+  "title": "Project Inquiry",
+  "description": "Tell us what you need and we will follow up with the next best step.",
+  "submitText": "Send Inquiry",
+  "theme": {
+    "accentColor": "#2563eb",
+    "layout": "single"
+  },
+  "fields": [
+    {
+      "id": "full_name",
+      "type": "text",
+      "label": "Full Name",
+      "placeholder": "Jane Smith",
+      "helper": "",
+      "required": true
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "label": "Email",
+      "placeholder": "jane@example.com",
+      "helper": "",
+      "required": true
+    },
+    {
+      "id": "phone",
+      "type": "tel",
+      "label": "Phone",
+      "placeholder": "(555) 123-4567",
+      "helper": "Optional, but helpful if you prefer a call.",
+      "required": false
+    },
+    {
+      "id": "service",
+      "type": "select",
+      "label": "Service Needed",
+      "placeholder": "Choose one",
+      "helper": "",
+      "required": true,
+      "options": ["Website", "Automation", "Branding", "Consulting"]
+    },
+    {
+      "id": "budget",
+      "type": "radio",
+      "label": "Estimated Budget",
+      "helper": "",
+      "required": true,
+      "options": ["Under $2,500", "$2,500 - $7,500", "$7,500+"]
+    },
+    {
+      "id": "details",
+      "type": "textarea",
+      "label": "Project Details",
+      "placeholder": "Share goals, timeline, and anything else we should know.",
+      "helper": "",
+      "required": false
+    }
+  ]
+}

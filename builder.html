@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Form Builder</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+  </head>
+  <body class="builder-page">
+    <header class="app-topbar">
+      <a class="brand" href="index.html" aria-label="Dynamic Form Studio home">
+        <span class="brand-mark">D</span>
+        <span>Form Studio</span>
+      </a>
+      <nav class="topbar-actions" aria-label="Builder actions">
+        <button class="icon-button" id="importConfigBtn" type="button" title="Import JSON" aria-label="Import JSON">
+          <span aria-hidden="true">Import</span>
+        </button>
+        <button class="icon-button" id="exportConfigBtn" type="button" title="Export JSON" aria-label="Export JSON">
+          <span aria-hidden="true">Export</span>
+        </button>
+        <a class="button compact" href="form.html">Preview Page</a>
+      </nav>
+    </header>
+
+    <main class="builder-shell">
+      <aside class="builder-panel field-library" aria-label="Field library">
+        <div class="panel-heading">
+          <p class="eyebrow">Fields</p>
+          <h2>Add Field</h2>
+        </div>
+        <div class="field-type-grid" id="fieldTypeGrid"></div>
+
+        <div class="panel-heading settings-heading">
+          <p class="eyebrow">Form</p>
+          <h2>Settings</h2>
+        </div>
+        <div class="settings-stack">
+          <label>
+            <span>Title</span>
+            <input id="formTitle" type="text" autocomplete="off">
+          </label>
+          <label>
+            <span>Description</span>
+            <textarea id="formDescription" rows="3"></textarea>
+          </label>
+          <label>
+            <span>Submit Button</span>
+            <input id="submitText" type="text" autocomplete="off">
+          </label>
+          <label>
+            <span>Accent Color</span>
+            <input id="accentColor" type="color">
+          </label>
+          <label>
+            <span>Layout Mode</span>
+            <select id="layoutMode">
+              <option value="single">Single page</option>
+              <option value="steps">Step by step</option>
+            </select>
+          </label>
+        </div>
+      </aside>
+
+      <section class="builder-preview" aria-label="Live preview">
+        <div class="preview-toolbar">
+          <div>
+            <p class="eyebrow">Live Preview</p>
+            <h1 id="builderPreviewTitle">Project Inquiry</h1>
+          </div>
+          <button class="button subtle" id="resetConfigBtn" type="button">Reset Sample</button>
+        </div>
+        <div class="preview-canvas">
+          <div id="builderPreview"></div>
+        </div>
+      </section>
+
+      <aside class="builder-panel inspector" aria-label="Selected field settings">
+        <div class="panel-heading">
+          <p class="eyebrow">Inspector</p>
+          <h2 id="inspectorTitle">Select a field</h2>
+        </div>
+        <div id="fieldList" class="field-list" aria-label="Form field list"></div>
+        <div id="fieldEditor" class="field-editor empty-state">
+          <p>Select a field in the preview or list to edit its details.</p>
+        </div>
+      </aside>
+    </main>
+
+    <input id="configFileInput" type="file" accept="application/json,.json" hidden>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="assets/js/form-core.js"></script>
+    <script src="assets/js/builder.js"></script>
+  </body>
+</html>
