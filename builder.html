@@ -19,6 +19,9 @@
         <button class="icon-button" id="exportConfigBtn" type="button" title="Export JSON" aria-label="Export JSON">
           <span aria-hidden="true">Export</span>
         </button>
+        <button class="icon-button" id="pushConfigBtn" type="button" title="Push JSON to GitHub" aria-label="Push JSON to GitHub">
+          <span aria-hidden="true">Push Config</span>
+        </button>
         <button class="button compact" id="previewDraftBtn" type="button">View Form</button>
         <button class="button compact ghost" id="logoutBtn" type="button">Logout</button>
       </nav>
@@ -81,6 +84,19 @@
           <p class="field-helper">This form always submits to Google Sheets. Paste a different Apps Script URL to send responses to a different sheet/script.</p>
           <button class="button subtle" id="loadPublishedConfigBtn" type="button">Load Published Config</button>
           <button class="button subtle" id="clearDraftCacheBtn" type="button">Clear Draft Cache</button>
+        </div>
+
+        <div class="panel-heading settings-heading">
+          <p class="eyebrow">Publish</p>
+          <h2>GitHub</h2>
+        </div>
+        <div class="settings-stack">
+          <label>
+            <span>GitHub Token</span>
+            <input id="githubToken" type="password" placeholder="Fine-grained token with Contents read/write" autocomplete="off">
+          </label>
+          <p class="field-helper">Token is kept only in this browser session. Push Config updates form-config.json in the GitHub repo.</p>
+          <button class="button subtle" id="saveGithubTokenBtn" type="button">Remember Token This Session</button>
         </div>
       </aside>
 

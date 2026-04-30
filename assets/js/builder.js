@@ -1,7 +1,12 @@
 (function () {
   const AUTH_KEY = "dynamicFormStudio.builderAuth";
+  const GH_TOKEN_KEY = "dynamicFormStudio.githubToken";
   const AUTH_USER = "onlyjc";
   const AUTH_PASS = "jc123";
+  const GITHUB_OWNER = "jcreatvz";
+  const GITHUB_REPO = "dynamic-form-builder";
+  const GITHUB_BRANCH = "main";
+  const CONFIG_PATH = "form-config.json";
 
   const {
     fieldTypes,
@@ -17,6 +22,7 @@
 
   let config = normalizeConfig(loadSavedConfig() || defaultConfig);
   let selectedId = config.fields[0] ? config.fields[0].id : null;
+  let builderInitialized = false;
 
   const nodes = {
     fieldTypeGrid: document.getElementById("fieldTypeGrid"),
@@ -37,6 +43,9 @@
     fieldEditor: document.getElementById("fieldEditor"),
     inspectorTitle: document.getElementById("inspectorTitle"),
     exportConfigBtn: document.getElementById("exportConfigBtn"),
+    pushConfigBtn: document.getElementById("pushConfigBtn"),
+    githubToken: document.getElementById("githubToken"),
+    saveGithubTokenBtn: document.getElementById("saveGithubTokenBtn"),
     importConfigBtn: document.getElementById("importConfigBtn"),
     configFileInput: document.getElementById("configFileInput"),
     resetConfigBtn: document.getElementById("resetConfigBtn"),
@@ -61,6 +70,8 @@
   }
 
   function initBuilder() {
+    if (builderInitialized) return;
+    builderInitialized = true;
     renderFieldTypes();
     bindSettings();
     bindActions();
@@ -142,6 +153,8 @@
 
   function bindActions() {
     nodes.exportConfigBtn.addEventListener("click", exportConfig);
+    nodes.pushConfigBtn.addEventListener("click", pushConfigToGitHub);
+    nodes.saveGithubTokenBtn.addEventListener("click", saveGithubToken);
     nodes.importConfigBtn.addEventListener("click", () => nodes.configFileInput.click());
     nodes.configFileInput.addEventListener("change", importConfig);
     nodes.previewDraftBtn.addEventListener("click", previewDraft);
@@ -167,6 +180,7 @@
     nodes.googleEndpoint.value = config.submission.googleEndpoint;
     nodes.googleEndpointRow.hidden = false;
     nodes.builderPreviewTitle.textContent = config.title;
+    nodes.githubToken.value = sessionStorage.getItem(GH_TOKEN_KEY) || "";
   }
 
   function readSettingsIntoConfig() {
@@ -498,6 +512,87 @@
     link.click();
     URL.revokeObjectURL(link.href);
     showToast("Config exported.");
+  }
+
+  function saveGithubToken() {
+    const token = nodes.githubToken.value.trim();
+    if (!token) {
+      sessionStorage.removeItem(GH_TOKEN_KEY);
+      showToast("GitHub token cleared for this session.");
+      return;
+    }
+
+    sessionStorage.setItem(GH_TOKEN_KEY, token);
+    nodes.githubToken.value = token;
+    showToast("GitHub token saved for this session.");
+  }
+
+  async function pushConfigToGitHub() {
+    readSettingsIntoConfig();
+    if (!config.submission.googleEndpoint) {
+      showToast("Paste an Apps Script URL before pushing.");
+      return;
+    }
+
+    const token = nodes.githubToken.value.trim() || sessionStorage.getItem(GH_TOKEN_KEY);
+    if (!token) {
+      showToast("Paste a GitHub token first.");
+      nodes.githubToken.focus();
+      return;
+    }
+
+    sessionStorage.setItem(GH_TOKEN_KEY, token);
+    nodes.pushConfigBtn.disabled = true;
+    nodes.pushConfigBtn.textContent = "Pushing...";
+
+    try {
+      const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${CONFIG_PATH}`;
+      const current = await githubRequest(`${apiUrl}?ref=${GITHUB_BRANCH}`, token);
+      const content = JSON.stringify(normalizeConfig(config), null, 2) + "\n";
+      await githubRequest(apiUrl, token, {
+        method: "PUT",
+        body: JSON.stringify({
+          message: "Update form config from builder",
+          content: toBase64(content),
+          sha: current.sha,
+          branch: GITHUB_BRANCH
+        })
+      });
+      saveConfig(config);
+      showToast("form-config.json pushed to GitHub.");
+    } catch (error) {
+      showToast(error.message || "GitHub push failed.");
+    } finally {
+      nodes.pushConfigBtn.disabled = false;
+      nodes.pushConfigBtn.textContent = "Push Config";
+    }
+  }
+
+  async function githubRequest(url, token, options) {
+    const response = await fetch(url, {
+      method: options && options.method ? options.method : "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      body: options && options.body ? options.body : undefined
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.message || `GitHub request failed (${response.status})`);
+    }
+    return data;
+  }
+
+  function toBase64(value) {
+    const bytes = new TextEncoder().encode(value);
+    let binary = "";
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    return btoa(binary);
   }
 
   async function loadPublishedConfig() {
