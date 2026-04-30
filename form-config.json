@@ -25,7 +25,14 @@
       "label": "Full Name",
       "placeholder": "Jane Smith",
       "helper": "",
-      "required": true
+      "required": true,
+      "visibility": {
+        "defaultState": "hidden",
+        "action": "show",
+        "fieldId": "service",
+        "operator": "equals",
+        "value": "Branding"
+      }
     },
     {
       "id": "email",
