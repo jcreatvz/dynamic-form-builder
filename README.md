@@ -18,12 +18,12 @@ Live site: https://jcreatvz.github.io/dynamic-form-builder/
 1. Open `builder.html`.
 2. Add or edit fields.
 3. Paste your Apps Script Web App URL.
-4. Use `Preview Draft` to test the builder's local draft immediately.
+4. Use `View Form` to test the builder's current draft immediately.
 5. Export the JSON config.
 6. Replace `form-config.json` in the repo with the exported file.
 7. Push to publish the change on GitHub Pages.
 
-The builder saves draft config to the browser. The public `form.html` page uses the published `form-config.json`; Preview Draft opens `form.html?source=local` after saving the current draft. If the browser draft gets stale, use `Clear Draft Cache` in the builder.
+The builder saves draft config to the browser. `View Form` opens `form.html` after saving the current draft, and the form uses that draft first. If no browser draft exists, it falls back to the published `form-config.json`.
 
 For a local preview that matches GitHub Pages file loading:
 

@@ -148,7 +148,7 @@
     readSettingsIntoConfig();
     saveConfig(config);
     const stamp = Date.now();
-    window.location.href = `form.html?source=local&t=${stamp}`;
+    window.location.href = `form.html?t=${stamp}`;
   }
 
   function renderAll() {
