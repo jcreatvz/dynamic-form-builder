@@ -1,4 +1,8 @@
 (function () {
+  const AUTH_KEY = "dynamicFormStudio.builderAuth";
+  const AUTH_USER = "onlyjc";
+  const AUTH_PASS = "jc123";
+
   const {
     fieldTypes,
     defaultConfig,
@@ -36,15 +40,75 @@
     importConfigBtn: document.getElementById("importConfigBtn"),
     configFileInput: document.getElementById("configFileInput"),
     resetConfigBtn: document.getElementById("resetConfigBtn"),
+    logoutBtn: document.getElementById("logoutBtn"),
+    loginGate: document.getElementById("loginGate"),
+    loginForm: document.getElementById("loginForm"),
+    loginUser: document.getElementById("loginUser"),
+    loginPass: document.getElementById("loginPass"),
+    rememberLogin: document.getElementById("rememberLogin"),
+    loginError: document.getElementById("loginError"),
     toast: document.getElementById("toast")
   };
 
   function init() {
+    bindAuth();
+    if (!isAuthenticated()) {
+      lockBuilder();
+      return;
+    }
+    unlockBuilder();
+    initBuilder();
+  }
+
+  function initBuilder() {
     renderFieldTypes();
     bindSettings();
     bindActions();
     syncSettings();
     renderAll();
+  }
+
+  function bindAuth() {
+    nodes.loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const valid = nodes.loginUser.value === AUTH_USER && nodes.loginPass.value === AUTH_PASS;
+      if (!valid) {
+        nodes.loginError.hidden = false;
+        nodes.loginPass.value = "";
+        nodes.loginPass.focus();
+        return;
+      }
+
+      nodes.loginError.hidden = true;
+      if (nodes.rememberLogin.checked) {
+        localStorage.setItem(AUTH_KEY, "1");
+      } else {
+        sessionStorage.setItem(AUTH_KEY, "1");
+      }
+      unlockBuilder();
+      initBuilder();
+    });
+
+    nodes.logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(AUTH_KEY);
+      window.location.reload();
+    });
+  }
+
+  function isAuthenticated() {
+    return localStorage.getItem(AUTH_KEY) === "1" || sessionStorage.getItem(AUTH_KEY) === "1";
+  }
+
+  function lockBuilder() {
+    document.body.classList.add("auth-locked");
+    nodes.loginGate.hidden = false;
+    nodes.loginUser.focus();
+  }
+
+  function unlockBuilder() {
+    document.body.classList.remove("auth-locked");
+    nodes.loginGate.hidden = true;
   }
 
   function renderFieldTypes() {

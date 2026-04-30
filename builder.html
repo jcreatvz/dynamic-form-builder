@@ -20,6 +20,7 @@
           <span aria-hidden="true">Export</span>
         </button>
         <button class="button compact" id="previewDraftBtn" type="button">View Form</button>
+        <button class="button compact ghost" id="logoutBtn" type="button">Logout</button>
       </nav>
     </header>
 
@@ -110,6 +111,30 @@
 
     <input id="configFileInput" type="file" accept="application/json,.json" hidden>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <section class="login-gate" id="loginGate" aria-label="Builder login">
+      <form class="login-card" id="loginForm">
+        <div>
+          <p class="eyebrow">Private Builder</p>
+          <h1>Sign in</h1>
+          <p>Enter the builder account to continue.</p>
+        </div>
+        <label>
+          <span>Username</span>
+          <input id="loginUser" type="text" autocomplete="username" required>
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="loginPass" type="password" autocomplete="current-password" required>
+        </label>
+        <label class="remember-row">
+          <input id="rememberLogin" type="checkbox" checked>
+          <span>Remember this browser</span>
+        </label>
+        <p class="field-error" id="loginError" hidden>Wrong username or password.</p>
+        <button class="button primary" type="submit">Login</button>
+      </form>
+    </section>
 
     <script src="assets/js/form-core.js"></script>
     <script src="assets/js/builder.js"></script>
