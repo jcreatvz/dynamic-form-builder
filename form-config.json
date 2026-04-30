@@ -5,7 +5,7 @@
   "theme": {
     "accentColor": "#2563eb",
     "layout": "single",
-    "colorMode": "light"
+    "colorMode": "dark"
   },
   "submission": {
     "type": "googleSheets",
@@ -39,7 +39,8 @@
         "Website",
         "Automation",
         "Branding"
-      ]
+      ],
+      "display": "dropdown"
     },
     {
       "id": "details",
@@ -50,12 +51,25 @@
       "required": false
     },
     {
-      "id": "text",
-      "type": "text",
-      "label": "Fuck",
-      "placeholder": "dasdad",
+      "id": "email_2",
+      "type": "email",
+      "label": "Email",
+      "placeholder": "",
       "helper": "",
-      "required": true
+      "required": false
+    },
+    {
+      "id": "dropdown",
+      "type": "select",
+      "label": "Dropdown",
+      "placeholder": "Choose one",
+      "helper": "",
+      "required": false,
+      "options": [
+        "Option 1",
+        "Option 2"
+      ],
+      "display": "dropdown"
     }
   ]
 }
