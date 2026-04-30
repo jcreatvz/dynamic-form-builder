@@ -21,6 +21,7 @@
     submitText: document.getElementById("submitText"),
     accentColor: document.getElementById("accentColor"),
     layoutMode: document.getElementById("layoutMode"),
+    colorMode: document.getElementById("colorMode"),
     googleEndpoint: document.getElementById("googleEndpoint"),
     googleEndpointRow: document.getElementById("googleEndpointRow"),
     previewDraftBtn: document.getElementById("previewDraftBtn"),
@@ -65,12 +66,13 @@
       config.submitText = nodes.submitText.value.trim() || "Submit";
       config.theme.accentColor = nodes.accentColor.value;
       config.theme.layout = nodes.layoutMode.value;
+      config.theme.colorMode = nodes.colorMode.value;
       config.submission.type = "googleSheets";
       config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
       persistAndRender();
     };
 
-    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.googleEndpoint]
+    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.colorMode, nodes.googleEndpoint]
       .forEach((input) => input.addEventListener("input", update));
   }
 
@@ -96,6 +98,7 @@
     nodes.submitText.value = config.submitText;
     nodes.accentColor.value = config.theme.accentColor;
     nodes.layoutMode.value = config.theme.layout;
+    nodes.colorMode.value = config.theme.colorMode;
     config.submission.type = "googleSheets";
     nodes.googleEndpoint.value = config.submission.googleEndpoint;
     nodes.googleEndpointRow.hidden = false;
@@ -108,6 +111,7 @@
     config.submitText = nodes.submitText.value.trim() || "Submit";
     config.theme.accentColor = nodes.accentColor.value;
     config.theme.layout = nodes.layoutMode.value;
+    config.theme.colorMode = nodes.colorMode.value;
     config.submission.type = "googleSheets";
     config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
     config = normalizeConfig(config);
@@ -125,6 +129,16 @@
 
     if (["select", "radio", "checkbox"].includes(type)) {
       field.options = ["Option 1", "Option 2"];
+    }
+
+    if (type === "select") {
+      field.display = "dropdown";
+    }
+
+    if (type === "section") {
+      field.label = "Section Title";
+      field.helper = "Optional section description.";
+      field.required = false;
     }
 
     config.fields.push(field);
@@ -223,12 +237,27 @@
       })
     );
 
+    if (field.type === "select") {
+      nodes.fieldEditor.appendChild(makeSelectInput("Display", field.display || "dropdown", [
+        ["dropdown", "Dropdown"],
+        ["list", "Option list"],
+        ["multiSelect", "Multi-select"]
+      ], (value) => {
+        field.display = value;
+        persistAndRender();
+      }));
+    }
+
     if (["select", "radio", "checkbox"].includes(field.type)) {
       nodes.fieldEditor.appendChild(makeTextarea("Options", field.options.join("\n"), (value) => {
         field.options = value.split("\n").map((item) => item.trim()).filter(Boolean);
         if (!field.options.length) field.options = ["Option 1"];
         persistAndRender();
       }));
+    }
+
+    if (field.type !== "section") {
+      nodes.fieldEditor.appendChild(makeConditionEditor(field));
     }
 
     nodes.fieldEditor.appendChild(makeFieldActions(field));
@@ -256,6 +285,22 @@
     return wrap;
   }
 
+  function makeSelectInput(label, value, options, onChange) {
+    const wrap = document.createElement("label");
+    wrap.innerHTML = `<span>${label}</span>`;
+    const input = document.createElement("select");
+    options.forEach(([optionValue, optionLabel]) => {
+      const option = document.createElement("option");
+      option.value = optionValue;
+      option.textContent = optionLabel;
+      input.appendChild(option);
+    });
+    input.value = value;
+    input.addEventListener("change", () => onChange(input.value));
+    wrap.appendChild(input);
+    return wrap;
+  }
+
   function makeToggle(label, checked, onChange) {
     const wrap = document.createElement("label");
     wrap.className = "toggle-row";
@@ -266,6 +311,66 @@
     input.checked = checked;
     input.addEventListener("change", () => onChange(input.checked));
     wrap.append(span, input);
+    return wrap;
+  }
+
+  function makeConditionEditor(field) {
+    const wrap = document.createElement("div");
+    wrap.className = "condition-editor";
+    const title = document.createElement("h3");
+    title.textContent = "Conditional Visibility";
+    wrap.appendChild(title);
+
+    const enabled = makeToggle("Show only when", Boolean(field.visibleIf), (checked) => {
+      if (checked) {
+        const source = config.fields.find((item) => item.id !== field.id && item.type !== "section");
+        field.visibleIf = {
+          fieldId: source ? source.id : "",
+          operator: "equals",
+          value: ""
+        };
+      } else {
+        delete field.visibleIf;
+      }
+      persistAndRender();
+    });
+    wrap.appendChild(enabled);
+
+    if (!field.visibleIf) return wrap;
+
+    const sourceOptions = config.fields
+      .filter((item) => item.id !== field.id && item.type !== "section")
+      .map((item) => [item.id, item.label]);
+    if (!sourceOptions.length) {
+      const empty = document.createElement("p");
+      empty.className = "field-helper";
+      empty.textContent = "Add another field first.";
+      wrap.appendChild(empty);
+      return wrap;
+    }
+
+    wrap.appendChild(makeSelectInput("Field", field.visibleIf.fieldId, sourceOptions, (value) => {
+      field.visibleIf.fieldId = value;
+      persistAndRender();
+    }));
+    wrap.appendChild(makeSelectInput("Operator", field.visibleIf.operator, [
+      ["equals", "Equals"],
+      ["notEquals", "Does not equal"],
+      ["contains", "Contains"],
+      ["isEmpty", "Is empty"],
+      ["isNotEmpty", "Is not empty"]
+    ], (value) => {
+      field.visibleIf.operator = value;
+      persistAndRender();
+    }));
+
+    if (!["isEmpty", "isNotEmpty"].includes(field.visibleIf.operator)) {
+      wrap.appendChild(makeTextInput("Value", field.visibleIf.value || "", (value) => {
+        field.visibleIf.value = value;
+        persistAndRender();
+      }));
+    }
+
     return wrap;
   }
 

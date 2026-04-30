@@ -4,7 +4,8 @@
   "submitText": "Send Inquiry",
   "theme": {
     "accentColor": "#2563eb",
-    "layout": "single"
+    "layout": "single",
+    "colorMode": "light"
   },
   "submission": {
     "type": "googleSheets",

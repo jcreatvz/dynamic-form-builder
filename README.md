@@ -13,6 +13,14 @@ Live site: https://jcreatvz.github.io/dynamic-form-builder/
 - `form.html` - public form renderer
 - `form-config.json` - sample static form configuration
 
+## Builder Features
+
+- Form theme mode: light or dark
+- Advanced select displays: dropdown, option list, or multi-select
+- Section fields for grouping related questions
+- Conditional visibility rules for showing fields based on previous answers
+- Google Sheets submission through an Apps Script Web App URL
+
 ## Workflow
 
 1. Open `builder.html`.

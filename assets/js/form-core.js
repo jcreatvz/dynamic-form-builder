@@ -9,7 +9,8 @@
     { type: "textarea", label: "Long Text", icon: "P" },
     { type: "select", label: "Dropdown", icon: "V" },
     { type: "radio", label: "Radio", icon: "O" },
-    { type: "checkbox", label: "Checkboxes", icon: "C" }
+    { type: "checkbox", label: "Checkboxes", icon: "C" },
+    { type: "section", label: "Section", icon: "S" }
   ];
 
   const defaultConfig = {
@@ -18,7 +19,8 @@
     submitText: "Send Inquiry",
     theme: {
       accentColor: "#2563eb",
-      layout: "single"
+      layout: "single",
+      colorMode: "light"
     },
     submission: {
       type: "googleSheets",
@@ -97,10 +99,29 @@
       required: Boolean(field.required)
     };
 
+    if (type === "section") {
+      normalized.required = false;
+      normalized.placeholder = "";
+    }
+
     if (["select", "radio", "checkbox"].includes(type)) {
       normalized.options = Array.isArray(field.options) && field.options.length
         ? field.options.map(String)
         : ["Option 1", "Option 2"];
+    }
+
+    if (type === "select") {
+      normalized.display = ["dropdown", "list", "multiSelect"].includes(field.display) ? field.display : "dropdown";
+    }
+
+    if (field.visibleIf && typeof field.visibleIf === "object") {
+      normalized.visibleIf = {
+        fieldId: field.visibleIf.fieldId || "",
+        operator: ["equals", "notEquals", "contains", "isEmpty", "isNotEmpty"].includes(field.visibleIf.operator)
+          ? field.visibleIf.operator
+          : "equals",
+        value: field.visibleIf.value || ""
+      };
     }
 
     return normalized;
@@ -117,7 +138,8 @@
       submitText: input.submitText || "Submit",
       theme: {
         accentColor: input.theme && input.theme.accentColor ? input.theme.accentColor : "#2563eb",
-        layout: input.theme && input.theme.layout === "steps" ? "steps" : "single"
+        layout: input.theme && input.theme.layout === "steps" ? "steps" : "single",
+        colorMode: input.theme && input.theme.colorMode === "dark" ? "dark" : "light"
       },
       submission: {
         type: "googleSheets",
@@ -153,6 +175,27 @@
     container.style.setProperty("--accent", accent);
   }
 
+  function evaluateCondition(condition, values) {
+    if (!condition || !condition.fieldId || !condition.operator) return true;
+    const value = values[condition.fieldId];
+    const isArray = Array.isArray(value);
+    const empty = isArray ? value.length === 0 : !value;
+
+    if (condition.operator === "isEmpty") return empty;
+    if (condition.operator === "isNotEmpty") return !empty;
+    if (condition.operator === "contains") {
+      return isArray ? value.includes(condition.value) : String(value || "").includes(condition.value);
+    }
+    if (condition.operator === "notEquals") {
+      return isArray ? !value.includes(condition.value) : String(value || "") !== condition.value;
+    }
+    return isArray ? value.includes(condition.value) : String(value || "") === condition.value;
+  }
+
+  function isFieldVisible(field, values) {
+    return evaluateCondition(field.visibleIf, values || {});
+  }
+
   function el(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -170,10 +213,16 @@
 
     if (field.type === "select") {
       const select = document.createElement("select");
+      if (field.display === "multiSelect") {
+        select.multiple = true;
+        select.size = Math.min(Math.max(field.options.length, 3), 6);
+      }
       const empty = document.createElement("option");
-      empty.value = "";
-      empty.textContent = field.placeholder || "Choose one";
-      select.appendChild(empty);
+      if (field.display !== "multiSelect") {
+        empty.value = "";
+        empty.textContent = field.placeholder || "Choose one";
+        select.appendChild(empty);
+      }
       field.options.forEach((option) => {
         const item = document.createElement("option");
         item.value = option;
@@ -214,7 +263,44 @@
     return group;
   }
 
+  function renderOptionList(field, values) {
+    const group = el("div", "choice-group option-list");
+    const mode = field.display === "multiSelect" ? "checkbox" : "radio";
+    group.setAttribute("role", mode === "radio" ? "radiogroup" : "group");
+
+    field.options.forEach((option, index) => {
+      const label = el("label", "choice-pill option-card");
+      const input = document.createElement("input");
+      input.type = mode;
+      input.name = field.id;
+      input.value = option;
+      input.id = `${field.id}_${index}`;
+      if (field.required && mode === "radio") input.required = true;
+      if (mode === "checkbox" && Array.isArray(values[field.id])) {
+        input.checked = values[field.id].includes(option);
+      } else if (values[field.id] === option) {
+        input.checked = true;
+      }
+      label.append(input, el("span", "", option));
+      group.appendChild(label);
+    });
+
+    return group;
+  }
+
   function renderField(field, values, options) {
+    if (field.type === "section") {
+      const section = el("div", "form-section");
+      section.dataset.fieldId = field.id;
+      if (options && options.selectedId === field.id) section.classList.add("is-selected");
+      section.appendChild(el("h2", "", field.label));
+      if (field.helper) section.appendChild(el("p", "", field.helper));
+      if (options && typeof options.onSelect === "function") {
+        section.addEventListener("click", () => options.onSelect(field.id));
+      }
+      return section;
+    }
+
     const fieldWrap = el("div", "form-field");
     fieldWrap.dataset.fieldId = field.id;
     if (options && options.selectedId === field.id) fieldWrap.classList.add("is-selected");
@@ -225,14 +311,22 @@
     fieldWrap.appendChild(label);
 
     let control;
-    if (field.type === "radio" || field.type === "checkbox") {
+    if (field.type === "select" && ["list", "multiSelect"].includes(field.display)) {
+      control = renderOptionList(field, values);
+    } else if (field.type === "radio" || field.type === "checkbox") {
       control = renderChoiceGroup(field, values);
     } else {
       control = makeInput(field);
       control.name = field.id;
       control.id = field.id;
       control.required = field.required;
-      if (values[field.id]) control.value = values[field.id];
+      if (field.type === "select" && field.display === "multiSelect" && Array.isArray(values[field.id])) {
+        Array.from(control.options).forEach((option) => {
+          option.selected = values[field.id].includes(option.value);
+        });
+      } else if (values[field.id]) {
+        control.value = values[field.id];
+      }
     }
 
     fieldWrap.appendChild(control);
@@ -255,9 +349,21 @@
   function collectValues(form, config) {
     const values = {};
     config.fields.forEach((field) => {
+      if (field.type === "section" || !isFieldVisible(field, values)) return;
       if (field.type === "checkbox") {
         values[field.id] = Array.from(form.querySelectorAll(`input[name="${CSS.escape(field.id)}"]:checked`))
           .map((input) => input.value);
+      } else if (field.type === "select" && field.display === "multiSelect") {
+        const select = form.querySelector(`[name="${CSS.escape(field.id)}"]`);
+        if (select) {
+          values[field.id] = Array.from(select.selectedOptions).map((option) => option.value);
+        } else {
+          values[field.id] = Array.from(form.querySelectorAll(`input[name="${CSS.escape(field.id)}"]:checked`))
+            .map((input) => input.value);
+        }
+      } else if (field.type === "select" && field.display === "list") {
+        const checked = form.querySelector(`input[name="${CSS.escape(field.id)}"]:checked`);
+        values[field.id] = checked ? checked.value : "";
       } else if (field.type === "radio") {
         const checked = form.querySelector(`input[name="${CSS.escape(field.id)}"]:checked`);
         values[field.id] = checked ? checked.value : "";
@@ -278,6 +384,7 @@
     root.querySelectorAll(".form-field").forEach((field) => field.classList.remove("has-error"));
 
     config.fields.forEach((field) => {
+      if (field.type === "section" || !isFieldVisible(field, values)) return;
       const value = values[field.id];
       const empty = Array.isArray(value) ? value.length === 0 : !value;
       if (field.required && empty) {
@@ -298,7 +405,7 @@
   function renderForm(container, config, options) {
     const normalized = normalizeConfig(config);
     const values = options && options.values ? options.values : {};
-    const form = el("form", "dynamic-form");
+    const form = el("form", `dynamic-form theme-${normalized.theme.colorMode}`);
     const header = el("div", "form-header");
     const title = el("h1", "", normalized.title);
     header.appendChild(title);
@@ -309,7 +416,9 @@
       renderSteppedFields(form, normalized, values, options);
     } else {
       const fieldsWrap = el("div", "fields-wrap");
-      normalized.fields.forEach((field) => fieldsWrap.appendChild(renderField(field, values, options)));
+      normalized.fields
+        .filter((field) => isFieldVisible(field, values))
+        .forEach((field) => fieldsWrap.appendChild(renderField(field, values, options)));
       form.appendChild(fieldsWrap);
       form.appendChild(renderSubmit(normalized.submitText));
     }
@@ -333,16 +442,18 @@
     let step = options && Number.isInteger(options.step) ? options.step : 0;
     step = Math.max(0, Math.min(step, config.fields.length - 1));
     const progress = el("div", "step-progress");
-    progress.appendChild(el("span", "", `Step ${step + 1} of ${config.fields.length}`));
+    const visibleFields = config.fields.filter((field) => isFieldVisible(field, values));
+    progress.appendChild(el("span", "", `Step ${Math.min(step + 1, visibleFields.length)} of ${visibleFields.length}`));
     const bar = el("div", "progress-track");
     const fill = el("i", "");
-    fill.style.width = `${((step + 1) / config.fields.length) * 100}%`;
+    fill.style.width = `${visibleFields.length ? ((step + 1) / visibleFields.length) * 100 : 100}%`;
     bar.appendChild(fill);
     progress.appendChild(bar);
     form.appendChild(progress);
 
     const fieldsWrap = el("div", "fields-wrap step-wrap");
-    fieldsWrap.appendChild(renderField(config.fields[step], values, options));
+    const currentField = visibleFields[Math.min(step, visibleFields.length - 1)];
+    if (currentField) fieldsWrap.appendChild(renderField(currentField, values, options));
     form.appendChild(fieldsWrap);
 
     const actions = el("div", "form-actions split-actions");
@@ -355,8 +466,8 @@
 
     const next = document.createElement("button");
     next.className = "button primary";
-    next.type = step === config.fields.length - 1 ? "submit" : "button";
-    next.textContent = step === config.fields.length - 1 ? config.submitText : "Next";
+    next.type = step === visibleFields.length - 1 ? "submit" : "button";
+    next.textContent = step === visibleFields.length - 1 ? config.submitText : "Next";
     if (next.type === "button") {
       next.addEventListener("click", () => options && options.onStepChange && options.onStepChange(step + 1));
     }
@@ -379,7 +490,7 @@
         id: field.id,
         label: field.label,
         type: field.type
-      })),
+      })).filter((field) => field.type !== "section" && Object.prototype.hasOwnProperty.call(values, field.id)),
       values
     };
 
@@ -408,6 +519,7 @@
     renderForm,
     collectValues,
     validateValues,
+    isFieldVisible,
     submitToGoogleSheets
   };
 })();

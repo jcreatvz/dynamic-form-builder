@@ -41,6 +41,11 @@
     form.addEventListener("input", () => {
       values = collectValues(form, config);
     });
+    form.addEventListener("change", () => {
+      values = collectValues(form, config);
+      currentStep = Math.min(currentStep, config.fields.length - 1);
+      render();
+    });
     form.addEventListener("submit", submitForm);
   }
 
