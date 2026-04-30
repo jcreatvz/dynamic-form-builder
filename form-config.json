@@ -1,7 +1,7 @@
 {
   "title": "Project Inquiry",
   "description": "Tell us what you need and we will follow up with the next best step.",
-  "submitText": "Send Inquiry",
+  "submitText": "SUBMIT",
   "theme": {
     "accentColor": "#2563eb",
     "layout": "single",
