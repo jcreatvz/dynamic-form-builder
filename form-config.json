@@ -40,6 +40,8 @@
         "Automation",
         "Branding"
       ],
+      "optionRulesText": "",
+      "optionRules": [],
       "display": "dropdown"
     },
     {
@@ -66,8 +68,36 @@
       "helper": "",
       "required": false,
       "options": [
-        "Option 1",
-        "Option 2"
+        "Option 1"
+      ],
+      "optionRulesText": "when service = Website:\n  Landing Page\n  E-commerce\nwhen service = Automation:\n  Zapier\n  Custom API\ndefault:\n  General Inquiry",
+      "optionRules": [
+        {
+          "sourceFieldId": "service",
+          "operator": "equals",
+          "value": "Website",
+          "options": [
+            "Landing Page",
+            "E-commerce"
+          ]
+        },
+        {
+          "sourceFieldId": "service",
+          "operator": "equals",
+          "value": "Automation",
+          "options": [
+            "Zapier",
+            "Custom API"
+          ]
+        },
+        {
+          "sourceFieldId": "",
+          "operator": "default",
+          "value": "",
+          "options": [
+            "General Inquiry"
+          ]
+        }
       ],
       "display": "dropdown"
     }
