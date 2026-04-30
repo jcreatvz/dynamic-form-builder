@@ -5,7 +5,14 @@
   "theme": {
     "accentColor": "#2563eb",
     "layout": "single",
-    "colorMode": "dark"
+    "colorMode": "dark",
+    "bodyBackgroundImage": "",
+    "formBackgroundImage": "",
+    "formBackgroundOpacity": 0.18,
+    "heroMedia": {
+      "type": "image",
+      "url": "https://wallpapers-clan.com/wp-content/uploads/2026/02/lofi-datsun-240z-palm-trees-retro-sunset-desktop-wallpaper-cover.jpg"
+    }
   },
   "submission": {
     "type": "googleSheets",
