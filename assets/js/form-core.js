@@ -20,7 +20,14 @@
     theme: {
       accentColor: "#2563eb",
       layout: "single",
-      colorMode: "light"
+      colorMode: "light",
+      bodyBackgroundImage: "",
+      formBackgroundImage: "",
+      formBackgroundOpacity: 0.18,
+      heroMedia: {
+        type: "none",
+        url: ""
+      }
     },
     submission: {
       type: "googleSheets",
@@ -129,6 +136,26 @@
       };
     }
 
+    if (field.visibility && typeof field.visibility === "object") {
+      normalized.visibility = {
+        defaultState: field.visibility.defaultState === "hidden" ? "hidden" : "shown",
+        action: field.visibility.action === "hide" ? "hide" : "show",
+        fieldId: field.visibility.fieldId || "",
+        operator: ["equals", "notEquals", "contains", "isEmpty", "isNotEmpty"].includes(field.visibility.operator)
+          ? field.visibility.operator
+          : "equals",
+        value: field.visibility.value || ""
+      };
+    } else if (normalized.visibleIf) {
+      normalized.visibility = {
+        defaultState: "hidden",
+        action: "show",
+        fieldId: normalized.visibleIf.fieldId,
+        operator: normalized.visibleIf.operator,
+        value: normalized.visibleIf.value
+      };
+    }
+
     return normalized;
   }
 
@@ -144,7 +171,18 @@
       theme: {
         accentColor: input.theme && input.theme.accentColor ? input.theme.accentColor : "#2563eb",
         layout: input.theme && input.theme.layout === "steps" ? "steps" : "single",
-        colorMode: input.theme && input.theme.colorMode === "dark" ? "dark" : "light"
+        colorMode: input.theme && input.theme.colorMode === "dark" ? "dark" : "light",
+        bodyBackgroundImage: input.theme && input.theme.bodyBackgroundImage ? String(input.theme.bodyBackgroundImage).trim() : "",
+        formBackgroundImage: input.theme && input.theme.formBackgroundImage ? String(input.theme.formBackgroundImage).trim() : "",
+        formBackgroundOpacity: input.theme && input.theme.formBackgroundOpacity !== undefined
+          ? Math.max(0, Math.min(1, Number(input.theme.formBackgroundOpacity) || 0))
+          : 0.18,
+        heroMedia: {
+          type: input.theme && input.theme.heroMedia && ["none", "image", "video"].includes(input.theme.heroMedia.type)
+            ? input.theme.heroMedia.type
+            : "none",
+          url: input.theme && input.theme.heroMedia && input.theme.heroMedia.url ? String(input.theme.heroMedia.url).trim() : ""
+        }
       },
       submission: {
         type: "googleSheets",
@@ -215,6 +253,9 @@
   function setAccent(container, config) {
     const accent = config.theme && config.theme.accentColor ? config.theme.accentColor : "#2563eb";
     container.style.setProperty("--accent", accent);
+    container.style.setProperty("--form-bg-opacity", config.theme.formBackgroundOpacity);
+    container.style.setProperty("--form-bg-image", config.theme.formBackgroundImage ? `url("${config.theme.formBackgroundImage}")` : "none");
+    document.body.style.setProperty("--body-bg-image", config.theme.bodyBackgroundImage ? `url("${config.theme.bodyBackgroundImage}")` : "none");
   }
 
   function evaluateCondition(condition, values) {
@@ -235,6 +276,18 @@
   }
 
   function isFieldVisible(field, values) {
+    if (field.visibility) {
+      const defaultVisible = field.visibility.defaultState !== "hidden";
+      if (!field.visibility.fieldId) return defaultVisible;
+      const matched = evaluateCondition({
+        fieldId: field.visibility.fieldId,
+        operator: field.visibility.operator,
+        value: field.visibility.value
+      }, values || {});
+      if (!matched) return defaultVisible;
+      return field.visibility.action === "show";
+    }
+
     return evaluateCondition(field.visibleIf, values || {});
   }
 
@@ -258,6 +311,7 @@
     const ids = new Set();
     normalized.fields.forEach((field) => {
       if (field.visibleIf && field.visibleIf.fieldId) ids.add(field.visibleIf.fieldId);
+      if (field.visibility && field.visibility.fieldId) ids.add(field.visibility.fieldId);
       (field.optionRules || []).forEach((rule) => {
         if (rule.sourceFieldId) ids.add(rule.sourceFieldId);
       });
@@ -359,10 +413,12 @@
   }
 
   function renderField(field, values, options) {
+    const hiddenForPreview = options && options.showHiddenFields && !isFieldVisible(field, values);
     if (field.type === "section") {
       const section = el("div", "form-section");
       section.dataset.fieldId = field.id;
       if (options && options.selectedId === field.id) section.classList.add("is-selected");
+      if (hiddenForPreview) section.classList.add("is-preview-hidden");
       section.appendChild(el("h2", "", field.label));
       if (field.helper) section.appendChild(el("p", "", field.helper));
       if (options && typeof options.onSelect === "function") {
@@ -374,6 +430,7 @@
     const fieldWrap = el("div", "form-field");
     fieldWrap.dataset.fieldId = field.id;
     if (options && options.selectedId === field.id) fieldWrap.classList.add("is-selected");
+    if (hiddenForPreview) fieldWrap.classList.add("is-preview-hidden");
 
     const label = el("label", "field-label");
     label.textContent = field.label;
@@ -480,6 +537,9 @@
     const values = options && options.values ? options.values : {};
     const form = el("form", `dynamic-form theme-${normalized.theme.colorMode}`);
     const header = el("div", "form-header");
+    if (normalized.theme.heroMedia.url && normalized.theme.heroMedia.type !== "none") {
+      header.appendChild(renderHeroMedia(normalized.theme.heroMedia));
+    }
     const title = el("h1", "", normalized.title);
     header.appendChild(title);
     if (normalized.description) header.appendChild(el("p", "", normalized.description));
@@ -490,7 +550,7 @@
     } else {
       const fieldsWrap = el("div", "fields-wrap");
       normalized.fields
-        .filter((field) => isFieldVisible(field, values))
+        .filter((field) => (options && options.showHiddenFields) || isFieldVisible(field, values))
         .forEach((field) => fieldsWrap.appendChild(renderField(field, values, options)));
       form.appendChild(fieldsWrap);
       form.appendChild(renderSubmit(normalized.submitText));
@@ -499,6 +559,25 @@
     container.replaceChildren(form);
     setAccent(container, normalized);
     return form;
+  }
+
+  function renderHeroMedia(media) {
+    const wrap = el("div", "form-hero-media");
+    if (media.type === "video") {
+      const video = document.createElement("video");
+      video.src = media.url;
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = "metadata";
+      wrap.appendChild(video);
+      return wrap;
+    }
+
+    const image = document.createElement("img");
+    image.src = media.url;
+    image.alt = "";
+    wrap.appendChild(image);
+    return wrap;
   }
 
   function renderSubmit(text) {

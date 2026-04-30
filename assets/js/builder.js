@@ -32,6 +32,11 @@
     accentColor: document.getElementById("accentColor"),
     layoutMode: document.getElementById("layoutMode"),
     colorMode: document.getElementById("colorMode"),
+    bodyBackgroundImage: document.getElementById("bodyBackgroundImage"),
+    formBackgroundImage: document.getElementById("formBackgroundImage"),
+    formBackgroundOpacity: document.getElementById("formBackgroundOpacity"),
+    heroMediaType: document.getElementById("heroMediaType"),
+    heroMediaUrl: document.getElementById("heroMediaUrl"),
     googleEndpoint: document.getElementById("googleEndpoint"),
     googleEndpointRow: document.getElementById("googleEndpointRow"),
     previewDraftBtn: document.getElementById("previewDraftBtn"),
@@ -142,12 +147,19 @@
       config.theme.accentColor = nodes.accentColor.value;
       config.theme.layout = nodes.layoutMode.value;
       config.theme.colorMode = nodes.colorMode.value;
+      config.theme.bodyBackgroundImage = nodes.bodyBackgroundImage.value.trim();
+      config.theme.formBackgroundImage = nodes.formBackgroundImage.value.trim();
+      config.theme.formBackgroundOpacity = Number(nodes.formBackgroundOpacity.value);
+      config.theme.heroMedia = {
+        type: nodes.heroMediaType.value,
+        url: nodes.heroMediaUrl.value.trim()
+      };
       config.submission.type = "googleSheets";
       config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
       persistAndRender();
     };
 
-    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.colorMode, nodes.googleEndpoint]
+    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.colorMode, nodes.bodyBackgroundImage, nodes.formBackgroundImage, nodes.formBackgroundOpacity, nodes.heroMediaType, nodes.heroMediaUrl, nodes.googleEndpoint]
       .forEach((input) => input.addEventListener("input", update));
   }
 
@@ -176,6 +188,11 @@
     nodes.accentColor.value = config.theme.accentColor;
     nodes.layoutMode.value = config.theme.layout;
     nodes.colorMode.value = config.theme.colorMode;
+    nodes.bodyBackgroundImage.value = config.theme.bodyBackgroundImage;
+    nodes.formBackgroundImage.value = config.theme.formBackgroundImage;
+    nodes.formBackgroundOpacity.value = config.theme.formBackgroundOpacity;
+    nodes.heroMediaType.value = config.theme.heroMedia.type;
+    nodes.heroMediaUrl.value = config.theme.heroMedia.url;
     config.submission.type = "googleSheets";
     nodes.googleEndpoint.value = config.submission.googleEndpoint;
     nodes.googleEndpointRow.hidden = false;
@@ -190,6 +207,13 @@
     config.theme.accentColor = nodes.accentColor.value;
     config.theme.layout = nodes.layoutMode.value;
     config.theme.colorMode = nodes.colorMode.value;
+    config.theme.bodyBackgroundImage = nodes.bodyBackgroundImage.value.trim();
+    config.theme.formBackgroundImage = nodes.formBackgroundImage.value.trim();
+    config.theme.formBackgroundOpacity = Number(nodes.formBackgroundOpacity.value);
+    config.theme.heroMedia = {
+      type: nodes.heroMediaType.value,
+      url: nodes.heroMediaUrl.value.trim()
+    };
     config.submission.type = "googleSheets";
     config.submission.googleEndpoint = nodes.googleEndpoint.value.trim();
     config = normalizeConfig(config);
@@ -253,6 +277,7 @@
   function renderPreview() {
     renderForm(nodes.builderPreview, config, {
       selectedId,
+      showHiddenFields: true,
       onSelect: selectField
     });
     const form = nodes.builderPreview.querySelector("form");
@@ -336,7 +361,7 @@
     }
 
     if (field.type !== "section") {
-      nodes.fieldEditor.appendChild(makeConditionEditor(field));
+      nodes.fieldEditor.appendChild(makeVisibilityEditor(field));
     }
 
     nodes.fieldEditor.appendChild(makeFieldActions(field));
@@ -393,29 +418,63 @@
     return wrap;
   }
 
-  function makeConditionEditor(field) {
+  function makeVisibilityEditor(field) {
     const wrap = document.createElement("div");
     wrap.className = "condition-editor";
     const title = document.createElement("h3");
-    title.textContent = "Conditional Visibility";
+    title.textContent = "Visibility";
     wrap.appendChild(title);
 
-    const enabled = makeToggle("Show only when", Boolean(field.visibleIf), (checked) => {
+    if (!field.visibility && field.visibleIf) {
+      field.visibility = {
+        defaultState: "hidden",
+        action: "show",
+        fieldId: field.visibleIf.fieldId,
+        operator: field.visibleIf.operator,
+        value: field.visibleIf.value
+      };
+      delete field.visibleIf;
+    }
+
+    const state = field.visibility || {
+      defaultState: "shown",
+      action: "show",
+      fieldId: "",
+      operator: "equals",
+      value: ""
+    };
+
+    wrap.appendChild(makeSelectInput("Default", state.defaultState, [
+      ["shown", "Shown by default"],
+      ["hidden", "Hidden by default"]
+    ], (value) => {
+      field.visibility = Object.assign({}, state, { defaultState: value });
+      persistAndRender();
+    }));
+
+    const enabled = makeToggle("Use visibility rule", Boolean(field.visibility && field.visibility.fieldId), (checked) => {
       if (checked) {
         const source = config.fields.find((item) => item.id !== field.id && item.type !== "section");
-        field.visibleIf = {
+        field.visibility = Object.assign({}, state, {
           fieldId: source ? source.id : "",
+          action: state.action || "show",
+          operator: "equals",
+          value: ""
+        });
+      } else {
+        field.visibility = {
+          defaultState: state.defaultState,
+          action: state.action || "show",
+          fieldId: "",
           operator: "equals",
           value: ""
         };
-      } else {
-        delete field.visibleIf;
       }
       persistAndRender();
     });
     wrap.appendChild(enabled);
 
-    if (!field.visibleIf) return wrap;
+    if (!field.visibility || !field.visibility.fieldId) return wrap;
 
     const sourceOptions = config.fields
       .filter((item) => item.id !== field.id && item.type !== "section")
@@ -428,24 +487,32 @@
       return wrap;
     }
 
-    wrap.appendChild(makeSelectInput("Field", field.visibleIf.fieldId, sourceOptions, (value) => {
-      field.visibleIf.fieldId = value;
+    wrap.appendChild(makeSelectInput("Action", field.visibility.action, [
+      ["show", "Show when matched"],
+      ["hide", "Hide when matched"]
+    ], (value) => {
+      field.visibility.action = value;
       persistAndRender();
     }));
-    wrap.appendChild(makeSelectInput("Operator", field.visibleIf.operator, [
+
+    wrap.appendChild(makeSelectInput("Field", field.visibility.fieldId, sourceOptions, (value) => {
+      field.visibility.fieldId = value;
+      persistAndRender();
+    }));
+    wrap.appendChild(makeSelectInput("Operator", field.visibility.operator, [
       ["equals", "Equals"],
       ["notEquals", "Does not equal"],
       ["contains", "Contains"],
       ["isEmpty", "Is empty"],
       ["isNotEmpty", "Is not empty"]
     ], (value) => {
-      field.visibleIf.operator = value;
+      field.visibility.operator = value;
       persistAndRender();
     }));
 
-    if (!["isEmpty", "isNotEmpty"].includes(field.visibleIf.operator)) {
-      wrap.appendChild(makeTextInput("Value", field.visibleIf.value || "", (value) => {
-        field.visibleIf.value = value;
+    if (!["isEmpty", "isNotEmpty"].includes(field.visibility.operator)) {
+      wrap.appendChild(makeTextInput("Value", field.visibility.value || "", (value) => {
+        field.visibility.value = value;
         persistAndRender();
       }));
     }

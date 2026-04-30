@@ -24,6 +24,10 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background: var(--bg);
+  background-image: var(--body-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
@@ -559,6 +563,8 @@ input[type="color"] {
 }
 
 .dynamic-form {
+  position: relative;
+  overflow: hidden;
   min-width: 0;
   width: 100%;
   max-width: 100%;
@@ -568,6 +574,23 @@ input[type="color"] {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: var(--shadow);
   animation: formIn 260ms ease both;
+}
+
+.dynamic-form::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--form-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  opacity: var(--form-bg-opacity, 0.18);
+  pointer-events: none;
+  content: "";
+}
+
+.dynamic-form > * {
+  position: relative;
+  z-index: 1;
 }
 
 .dynamic-form.theme-dark {
@@ -608,6 +631,22 @@ input[type="color"] {
 
 .form-header {
   margin-bottom: 26px;
+}
+
+.form-hero-media {
+  overflow: hidden;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  aspect-ratio: 16 / 7;
+}
+
+.form-hero-media img,
+.form-hero-media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .form-header h1,
@@ -658,6 +697,24 @@ input[type="color"] {
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--accent), transparent 94%);
   padding: 12px;
+}
+
+.form-field.is-preview-hidden,
+.form-section.is-preview-hidden {
+  opacity: 0.5;
+}
+
+.form-field.is-preview-hidden::after,
+.form-section.is-preview-hidden::after {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  content: "Hidden in live form";
 }
 
 .form-field {

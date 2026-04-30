@@ -21,6 +21,8 @@ Live site: https://jcreatvz.github.io/dynamic-form-builder/
 - Section fields for grouping related questions
 - Conditional visibility rules for showing fields based on previous answers
 - Dynamic option scripts for dropdown, radio, and checkbox fields
+- Field visibility defaults and show/hide rules with faded hidden fields in builder preview
+- Body background image, form background image, and hero image/video controls
 - Google Sheets submission through an Apps Script Web App URL
 
 The builder login is a temporary browser-side gate, not production security.
@@ -59,6 +61,20 @@ Supported rule headers:
 - `when field_id != Value:`
 - `when field_id contains Value:`
 - `default:`
+
+## Visibility Rules
+
+Each non-section field can be shown or hidden by default. A rule can then show or hide that field when another field matches a condition. In the builder preview, hidden fields remain visible at reduced opacity so they can still be edited. In the live form, hidden fields are removed from validation and submission.
+
+## Form Media
+
+Form settings support public URLs for:
+
+- Body background image
+- Form wrapper background image with opacity
+- Hero image or direct video URL before the form heading
+
+Use direct public image/video URLs such as `.jpg`, `.png`, `.webp`, or `.mp4`.
 
 ## Temporary GitHub Publishing
 
