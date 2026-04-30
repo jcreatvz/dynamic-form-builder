@@ -332,6 +332,7 @@
         if (!field.options.length) field.options = ["Option 1"];
         persistAndRender();
       }));
+      nodes.fieldEditor.appendChild(makeOptionRulesEditor(field));
     }
 
     if (field.type !== "section") {
@@ -449,6 +450,25 @@
       }));
     }
 
+    return wrap;
+  }
+
+  function makeOptionRulesEditor(field) {
+    const wrap = document.createElement("div");
+    wrap.className = "condition-editor";
+    const title = document.createElement("h3");
+    title.textContent = "Dynamic Option Rules";
+    const help = document.createElement("p");
+    help.className = "field-helper";
+    help.textContent = "Applies only to dropdown, radio, and checkbox fields. Use source field IDs. Example: when service = Website:";
+    const example = document.createElement("pre");
+    example.className = "script-example";
+    example.textContent = "when service = Website:\n  Landing Page\n  E-commerce\nwhen service = Automation:\n  Zapier\n  Custom API\ndefault:\n  General Inquiry";
+    const editor = makeTextarea("Rules", field.optionRulesText || "", (value) => {
+      field.optionRulesText = value;
+      persistAndRender();
+    });
+    wrap.append(title, help, example, editor);
     return wrap;
   }
 

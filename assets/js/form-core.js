@@ -110,6 +110,11 @@
         : ["Option 1", "Option 2"];
     }
 
+    if (["select", "radio", "checkbox"].includes(type)) {
+      normalized.optionRulesText = field.optionRulesText || "";
+      normalized.optionRules = parseOptionRules(normalized.optionRulesText);
+    }
+
     if (type === "select") {
       normalized.display = ["dropdown", "list", "multiSelect"].includes(field.display) ? field.display : "dropdown";
     }
@@ -147,6 +152,43 @@
       },
       fields: normalizedFields
     };
+  }
+
+  function parseOptionRules(text) {
+    const rules = [];
+    let current = null;
+    String(text || "").split(/\r?\n/).forEach((rawLine) => {
+      const line = rawLine.trim();
+      if (!line) return;
+
+      const whenMatch = line.match(/^when\s+([A-Za-z0-9_-]+)\s*(=|!=|contains)\s*(.+):$/i);
+      if (whenMatch) {
+        current = {
+          sourceFieldId: whenMatch[1],
+          operator: whenMatch[2] === "!=" ? "notEquals" : whenMatch[2] === "contains" ? "contains" : "equals",
+          value: whenMatch[3].trim(),
+          options: []
+        };
+        rules.push(current);
+        return;
+      }
+
+      if (/^default\s*:$/i.test(line)) {
+        current = {
+          sourceFieldId: "",
+          operator: "default",
+          value: "",
+          options: []
+        };
+        rules.push(current);
+        return;
+      }
+
+      if (current) {
+        current.options.push(line.replace(/^-\s*/, ""));
+      }
+    });
+    return rules.filter((rule) => rule.options.length);
   }
 
   function saveConfig(config) {
@@ -196,6 +238,33 @@
     return evaluateCondition(field.visibleIf, values || {});
   }
 
+  function getEffectiveOptions(field, values) {
+    if (!field.optionRules || !field.optionRules.length) return field.options || [];
+    const matched = field.optionRules.find((rule) => {
+      if (rule.operator === "default") return false;
+      return evaluateCondition({
+        fieldId: rule.sourceFieldId,
+        operator: rule.operator,
+        value: rule.value
+      }, values || {});
+    });
+    if (matched) return matched.options;
+    const fallback = field.optionRules.find((rule) => rule.operator === "default");
+    return fallback ? fallback.options : field.options || [];
+  }
+
+  function getDynamicDependencyIds(config) {
+    const normalized = normalizeConfig(config);
+    const ids = new Set();
+    normalized.fields.forEach((field) => {
+      if (field.visibleIf && field.visibleIf.fieldId) ids.add(field.visibleIf.fieldId);
+      (field.optionRules || []).forEach((rule) => {
+        if (rule.sourceFieldId) ids.add(rule.sourceFieldId);
+      });
+    });
+    return ids;
+  }
+
   function el(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -213,9 +282,10 @@
 
     if (field.type === "select") {
       const select = document.createElement("select");
+      const effectiveOptions = getEffectiveOptions(field, {});
       if (field.display === "multiSelect") {
         select.multiple = true;
-        select.size = Math.min(Math.max(field.options.length, 3), 6);
+        select.size = Math.min(Math.max(effectiveOptions.length, 3), 6);
       }
       const empty = document.createElement("option");
       if (field.display !== "multiSelect") {
@@ -223,7 +293,7 @@
         empty.textContent = field.placeholder || "Choose one";
         select.appendChild(empty);
       }
-      field.options.forEach((option) => {
+      effectiveOptions.forEach((option) => {
         const item = document.createElement("option");
         item.value = option;
         item.textContent = option;
@@ -242,7 +312,7 @@
     const group = el("div", "choice-group");
     group.setAttribute("role", field.type === "radio" ? "radiogroup" : "group");
 
-    field.options.forEach((option, index) => {
+    getEffectiveOptions(field, values).forEach((option, index) => {
       const id = `${field.id}_${index}`;
       const label = el("label", "choice-pill");
       const input = document.createElement("input");
@@ -268,7 +338,7 @@
     const mode = field.display === "multiSelect" ? "checkbox" : "radio";
     group.setAttribute("role", mode === "radio" ? "radiogroup" : "group");
 
-    field.options.forEach((option, index) => {
+    getEffectiveOptions(field, values).forEach((option, index) => {
       const label = el("label", "choice-pill option-card");
       const input = document.createElement("input");
       input.type = mode;
@@ -316,7 +386,10 @@
     } else if (field.type === "radio" || field.type === "checkbox") {
       control = renderChoiceGroup(field, values);
     } else {
-      control = makeInput(field);
+      const fieldForInput = field.type === "select"
+        ? Object.assign({}, field, { options: getEffectiveOptions(field, values), optionRules: [] })
+        : field;
+      control = makeInput(fieldForInput);
       control.name = field.id;
       control.id = field.id;
       control.required = field.required;
@@ -520,6 +593,7 @@
     collectValues,
     validateValues,
     isFieldVisible,
+    getDynamicDependencyIds,
     submitToGoogleSheets
   };
 })();

@@ -20,6 +20,7 @@ Live site: https://jcreatvz.github.io/dynamic-form-builder/
 - Advanced select displays: dropdown, option list, or multi-select
 - Section fields for grouping related questions
 - Conditional visibility rules for showing fields based on previous answers
+- Dynamic option scripts for dropdown, radio, and checkbox fields
 - Google Sheets submission through an Apps Script Web App URL
 
 The builder login is a temporary browser-side gate, not production security.
@@ -34,6 +35,30 @@ The builder login is a temporary browser-side gate, not production security.
 6. Publish the change on GitHub Pages.
 
 The builder saves draft config to the browser. `View Form` opens `form.html` after saving the current draft, and the form uses that draft first. If no browser draft exists, it falls back to the published `form-config.json`.
+
+## Dynamic Option Rules
+
+Dynamic option rules apply only to dropdown/select, radio, and checkbox fields. They let one field control the available options in another field using field IDs.
+
+Example:
+
+```text
+when service = Website:
+  Landing Page
+  E-commerce
+when service = Automation:
+  Zapier
+  Custom API
+default:
+  General Inquiry
+```
+
+Supported rule headers:
+
+- `when field_id = Value:`
+- `when field_id != Value:`
+- `when field_id contains Value:`
+- `default:`
 
 ## Temporary GitHub Publishing
 

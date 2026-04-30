@@ -5,6 +5,7 @@
     renderForm,
     collectValues,
     validateValues,
+    getDynamicDependencyIds,
     submitToGoogleSheets
   } = window.FormStudio;
 
@@ -41,12 +42,20 @@
     form.addEventListener("input", () => {
       values = collectValues(form, config);
     });
-    form.addEventListener("change", () => {
+    form.addEventListener("change", (event) => {
       values = collectValues(form, config);
-      currentStep = Math.min(currentStep, config.fields.length - 1);
-      render();
+      if (shouldRerenderForChange(event)) {
+        currentStep = Math.min(currentStep, config.fields.length - 1);
+        render();
+      }
     });
     form.addEventListener("submit", submitForm);
+  }
+
+  function shouldRerenderForChange(event) {
+    const name = event.target && event.target.name;
+    if (!name) return false;
+    return getDynamicDependencyIds(config).has(name);
   }
 
   function changeStep(nextStep) {
