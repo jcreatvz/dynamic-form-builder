@@ -162,7 +162,7 @@
   function normalizeConfig(config) {
     const input = config && typeof config === "object" ? config : defaultConfig;
     const fields = Array.isArray(input.fields) ? input.fields : [];
-    const normalizedFields = fields.map((field) => normalizeField(field, fields));
+    const normalizedFields = ensureUniqueFieldIds(fields.map((field) => normalizeField(field, fields)));
 
     return {
       title: input.title || "Untitled Form",
@@ -190,6 +190,31 @@
       },
       fields: normalizedFields
     };
+  }
+
+  function ensureUniqueFieldIds(fields) {
+    const used = new Set();
+    return fields.map((field) => {
+      const base = slugify(field.id || field.label || field.type);
+      let next = base;
+      let index = 2;
+      while (used.has(next)) {
+        next = `${base}_${index}`;
+        index += 1;
+      }
+      used.add(next);
+      return Object.assign({}, field, { id: next });
+    });
+  }
+
+  function getUniqueFieldLabels(fields) {
+    const used = new Map();
+    return fields.map((field) => {
+      const base = String(field.label || field.id || "Untitled Field").trim() || "Untitled Field";
+      const count = used.get(base) || 0;
+      used.set(base, count + 1);
+      return count ? `${base} ${count + 1}` : base;
+    });
   }
 
   function parseOptionRules(text) {
@@ -477,32 +502,46 @@
   }
 
   function collectValues(form, config) {
-    const values = {};
+    const rawValues = {};
     config.fields.forEach((field) => {
-      if (field.type === "section" || !isFieldVisible(field, values)) return;
+      if (field.type === "section") return;
       if (field.type === "checkbox") {
-        values[field.id] = Array.from(form.querySelectorAll(`input[name="${CSS.escape(field.id)}"]:checked`))
+        rawValues[field.id] = Array.from(form.querySelectorAll(`input[name="${CSS.escape(field.id)}"]:checked`))
           .map((input) => input.value);
       } else if (field.type === "select" && field.display === "multiSelect") {
         const select = form.querySelector(`[name="${CSS.escape(field.id)}"]`);
         if (select) {
-          values[field.id] = Array.from(select.selectedOptions).map((option) => option.value);
+          rawValues[field.id] = Array.from(select.selectedOptions).map((option) => option.value);
         } else {
-          values[field.id] = Array.from(form.querySelectorAll(`input[name="${CSS.escape(field.id)}"]:checked`))
+          rawValues[field.id] = Array.from(form.querySelectorAll(`input[name="${CSS.escape(field.id)}"]:checked`))
             .map((input) => input.value);
         }
       } else if (field.type === "select" && field.display === "list") {
         const checked = form.querySelector(`input[name="${CSS.escape(field.id)}"]:checked`);
-        values[field.id] = checked ? checked.value : "";
+        rawValues[field.id] = checked ? checked.value : "";
       } else if (field.type === "radio") {
         const checked = form.querySelector(`input[name="${CSS.escape(field.id)}"]:checked`);
-        values[field.id] = checked ? checked.value : "";
+        rawValues[field.id] = checked ? checked.value : "";
       } else {
         const input = form.querySelector(`[name="${CSS.escape(field.id)}"]`);
-        values[field.id] = input ? input.value.trim() : "";
+        rawValues[field.id] = input ? input.value.trim() : "";
       }
     });
+
+    const values = {};
+    config.fields.forEach((field) => {
+      if (field.type === "section") return;
+      values[field.id] = isFieldVisible(field, rawValues) ? emptyValueForMissing(field, rawValues[field.id]) : emptyValue(field);
+    });
     return values;
+  }
+
+  function emptyValue(field) {
+    return field.type === "checkbox" || (field.type === "select" && field.display === "multiSelect") ? [] : "";
+  }
+
+  function emptyValueForMissing(field, value) {
+    return value === undefined ? emptyValue(field) : value;
   }
 
   function validateValues(config, values, root) {
@@ -673,11 +712,7 @@
     const payload = {
       submittedAt: new Date().toISOString(),
       formTitle: normalized.title,
-      fields: normalized.fields.map((field) => ({
-        id: field.id,
-        label: field.label,
-        type: field.type
-      })).filter((field) => field.type !== "section" && Object.prototype.hasOwnProperty.call(values, field.id)),
+      fields: buildSubmissionFields(normalized),
       values
     };
 
@@ -693,6 +728,17 @@
     return response;
   }
 
+  function buildSubmissionFields(config) {
+    const fields = config.fields.filter((field) => field.type !== "section");
+    const labels = getUniqueFieldLabels(fields);
+    return fields.map((field, index) => ({
+      id: field.id,
+      label: field.label,
+      sheetLabel: labels[index],
+      type: field.type
+    }));
+  }
+
   window.FormStudio = {
     STORAGE_KEY,
     fieldTypes,
@@ -700,6 +746,7 @@
     clone,
     uniqueId,
     normalizeConfig,
+    getUniqueFieldLabels,
     saveConfig,
     loadSavedConfig,
     loadStaticConfig,

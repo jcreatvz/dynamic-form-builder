@@ -256,6 +256,9 @@
 
   function persistAndRender() {
     config = normalizeConfig(config);
+    if (!config.fields.some((field) => field.id === selectedId)) {
+      selectedId = config.fields[0] ? config.fields[0].id : null;
+    }
     saveConfig(config);
     renderAll();
   }

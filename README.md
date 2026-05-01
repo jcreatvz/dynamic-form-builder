@@ -112,3 +112,5 @@ Then open `http://127.0.0.1:4173/`.
 The Apps Script creates a `Submissions` tab, keeps the header row aligned to the current form fields, and appends each form response as a new row.
 
 Because the static site submits to Apps Script with browser `no-cors` mode, the form can confirm that the request was handed to the endpoint, but it cannot read the true row-insert response from Google. If the Apps Script URL, deployment, or permissions are wrong, Google may reject the insert after the browser handoff.
+
+Field IDs are normalized to stay unique. Google Sheet headers use field labels for readability, and duplicate labels are numbered automatically, such as `Email` and `Email 2`. Hidden fields are still included in submissions as blank values, so their columns can be created in the sheet without blocking required-field validation while hidden.
