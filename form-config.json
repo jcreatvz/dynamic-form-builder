@@ -1,11 +1,18 @@
 {
   "title": "Project Inquiry",
   "description": "Tell us what you need and we will follow up with the next best step.",
-  "submitText": "Send Inquiry",
+  "submitText": "SUBMIT",
   "theme": {
     "accentColor": "#2563eb",
     "layout": "single",
-    "colorMode": "dark"
+    "colorMode": "dark",
+    "bodyBackgroundImage": "",
+    "formBackgroundImage": "",
+    "formBackgroundOpacity": 0.18,
+    "heroMedia": {
+      "type": "image",
+      "url": "https://wallpapers-clan.com/wp-content/uploads/2026/02/lofi-datsun-240z-palm-trees-retro-sunset-desktop-wallpaper-cover.jpg"
+    }
   },
   "submission": {
     "type": "googleSheets",
@@ -18,7 +25,14 @@
       "label": "Full Name",
       "placeholder": "Jane Smith",
       "helper": "",
-      "required": true
+      "required": true,
+      "visibility": {
+        "defaultState": "hidden",
+        "action": "show",
+        "fieldId": "service",
+        "operator": "equals",
+        "value": "Branding"
+      }
     },
     {
       "id": "email",
