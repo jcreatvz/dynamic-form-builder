@@ -576,6 +576,10 @@ input[type="color"] {
   animation: formIn 260ms ease both;
 }
 
+.dynamic-form.no-animate {
+  animation: none;
+}
+
 .dynamic-form::before {
   position: absolute;
   inset: 0;
@@ -642,10 +646,12 @@ input[type="color"] {
 }
 
 .form-hero-media img,
-.form-hero-media video {
+.form-hero-media video,
+.form-hero-media iframe {
   display: block;
   width: 100%;
   height: 100%;
+  border: 0;
   object-fit: cover;
 }
 

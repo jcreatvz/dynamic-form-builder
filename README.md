@@ -74,7 +74,7 @@ Form settings support public URLs for:
 - Form wrapper background image with opacity
 - Hero image or direct video URL before the form heading
 
-Use direct public image/video URLs such as `.jpg`, `.png`, `.webp`, or `.mp4`.
+Use direct public image/video URLs such as `.jpg`, `.png`, `.webp`, or `.mp4`. Direct videos autoplay muted, loop, and hide controls. YouTube watch, short, live, embed, and `youtu.be` links are also supported and are converted into muted autoplay looping hero videos. Browser autoplay generally requires the video to be muted.
 
 ## Temporary GitHub Publishing
 
@@ -110,3 +110,5 @@ Then open `http://127.0.0.1:4173/`.
 10. Open `builder.html`, paste the Web App URL, then export or push `form-config.json`.
 
 The Apps Script creates a `Submissions` tab, keeps the header row aligned to the current form fields, and appends each form response as a new row.
+
+Because the static site submits to Apps Script with browser `no-cors` mode, the form can confirm that the request was handed to the endpoint, but it cannot read the true row-insert response from Google. If the Apps Script URL, deployment, or permissions are wrong, Google may reject the insert after the browser handoff.

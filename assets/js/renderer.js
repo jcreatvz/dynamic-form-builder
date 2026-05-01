@@ -14,6 +14,8 @@
   let config = null;
   let currentStep = 0;
   let values = {};
+  let hasRendered = false;
+  let pendingRender = null;
 
   async function init() {
     showLoading();
@@ -39,6 +41,10 @@
       step: currentStep,
       onStepChange: changeStep
     });
+    if (hasRendered) {
+      form.classList.add("no-animate");
+    }
+    hasRendered = true;
     form.addEventListener("input", () => {
       values = collectValues(form, config);
     });
@@ -46,10 +52,18 @@
       values = collectValues(form, config);
       if (shouldRerenderForChange(event)) {
         currentStep = Math.min(currentStep, config.fields.length - 1);
-        render();
+        scheduleRender(captureFocusState());
       }
     });
     form.addEventListener("submit", submitForm);
+  }
+
+  function scheduleRender(focusState) {
+    window.clearTimeout(pendingRender);
+    pendingRender = window.setTimeout(() => {
+      render();
+      restoreFocusState(focusState);
+    }, 70);
   }
 
   function shouldRerenderForChange(event) {
@@ -63,6 +77,45 @@
     values = collectValues(form, config);
     currentStep = Math.max(0, Math.min(nextStep, config.fields.length - 1));
     render();
+  }
+
+  function captureFocusState() {
+    const active = document.activeElement;
+    if (!active || !container.contains(active) || !active.name) return null;
+    const state = {
+      name: active.name,
+      value: active.value,
+      checked: active.checked,
+      selectionStart: null,
+      selectionEnd: null
+    };
+    if (typeof active.selectionStart === "number" && typeof active.selectionEnd === "number") {
+      state.selectionStart = active.selectionStart;
+      state.selectionEnd = active.selectionEnd;
+    }
+    return state;
+  }
+
+  function restoreFocusState(state) {
+    if (!state || !state.name) return;
+    const selector = `[name="${escapeSelector(state.name)}"]`;
+    const candidates = Array.from(container.querySelectorAll(selector));
+    const target = candidates.find((item) => item.value === state.value || item.checked === state.checked) || candidates[0];
+    if (!target) return;
+    target.focus({ preventScroll: true });
+    if (typeof target.setSelectionRange === "function" && state.selectionStart !== null) {
+      try {
+        target.setSelectionRange(state.selectionStart, state.selectionEnd);
+      } catch (error) {
+        // Some input types do not support text selection.
+      }
+    }
+  }
+
+  function escapeSelector(value) {
+    return window.CSS && typeof window.CSS.escape === "function"
+      ? window.CSS.escape(value)
+      : String(value).replace(/"/g, '\\"');
   }
 
   async function submitForm(event) {
@@ -117,8 +170,8 @@
     container.innerHTML = `
       <div class="dynamic-form result-state success-state">
         <div class="success-mark">OK</div>
-        <h1>Submission received</h1>
-        <p>Your response was sent to the connected Google Sheet.</p>
+        <h1>Submission sent</h1>
+        <p>The form sent the request to the connected Google Apps Script endpoint. If the Apps Script URL and deployment are correct, the response will be added to the Google Sheet.</p>
         <button class="button primary" id="submitAnother" type="button">Submit Another</button>
       </div>
     `;

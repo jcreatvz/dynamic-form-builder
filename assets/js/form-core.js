@@ -564,11 +564,30 @@
   function renderHeroMedia(media) {
     const wrap = el("div", "form-hero-media");
     if (media.type === "video") {
+      const youtubeId = getYouTubeId(media.url);
+      if (youtubeId) {
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&playsinline=1&modestbranding=1&rel=0`;
+        iframe.title = "Hero video";
+        iframe.loading = "lazy";
+        iframe.allow = "autoplay; encrypted-media; picture-in-picture";
+        iframe.referrerPolicy = "strict-origin-when-cross-origin";
+        wrap.appendChild(iframe);
+        return wrap;
+      }
+
       const video = document.createElement("video");
       video.src = media.url;
-      video.controls = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.controls = false;
       video.playsInline = true;
       video.preload = "metadata";
+      video.setAttribute("autoplay", "");
+      video.setAttribute("loop", "");
+      video.setAttribute("muted", "");
+      video.setAttribute("playsinline", "");
       wrap.appendChild(video);
       return wrap;
     }
@@ -578,6 +597,21 @@
     image.alt = "";
     wrap.appendChild(image);
     return wrap;
+  }
+
+  function getYouTubeId(url) {
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname.replace(/^www\./, "");
+      if (host === "youtu.be") return parsed.pathname.split("/").filter(Boolean)[0] || "";
+      if (!["youtube.com", "m.youtube.com", "music.youtube.com"].includes(host)) return "";
+      if (parsed.pathname === "/watch") return parsed.searchParams.get("v") || "";
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      if (["embed", "shorts", "live"].includes(parts[0])) return parts[1] || "";
+      return "";
+    } catch (error) {
+      return "";
+    }
   }
 
   function renderSubmit(text) {
