@@ -8,10 +8,10 @@
     "colorMode": "dark",
     "bodyBackgroundImage": "",
     "formBackgroundImage": "",
-    "formBackgroundOpacity": 0.18,
+    "formBackgroundOpacity": 0.15,
     "heroMedia": {
       "type": "video",
-      "url": "https://www.youtube.com/watch?v=g1-46Nu3HxQ"
+      "url": "https://www.youtube.com/watch?v=5URefVYaJrA"
     }
   },
   "submission": {
@@ -114,6 +114,14 @@
         }
       ],
       "display": "dropdown"
+    },
+    {
+      "id": "section",
+      "type": "section",
+      "label": "Section Title",
+      "placeholder": "",
+      "helper": "Optional section description.",
+      "required": false
     }
   ]
 }
