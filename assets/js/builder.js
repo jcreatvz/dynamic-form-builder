@@ -17,7 +17,8 @@
     saveConfig,
     loadSavedConfig,
     loadStaticConfig,
-    renderForm
+    renderForm,
+    applyBranding
   } = window.FormStudio;
 
   let config = normalizeConfig(loadSavedConfig() || defaultConfig);
@@ -27,9 +28,20 @@
   const nodes = {
     fieldTypeGrid: document.getElementById("fieldTypeGrid"),
     formTitle: document.getElementById("formTitle"),
+    brandMark: document.getElementById("brandMark"),
+    brandName: document.getElementById("brandName"),
+    brandTextColor: document.getElementById("brandTextColor"),
+    brandMarkBackground: document.getElementById("brandMarkBackground"),
+    brandMarkColor: document.getElementById("brandMarkColor"),
     formDescription: document.getElementById("formDescription"),
     submitText: document.getElementById("submitText"),
     accentColor: document.getElementById("accentColor"),
+    titleColor: document.getElementById("titleColor"),
+    descriptionColor: document.getElementById("descriptionColor"),
+    labelColor: document.getElementById("labelColor"),
+    inputBackground: document.getElementById("inputBackground"),
+    inputBorder: document.getElementById("inputBorder"),
+    buttonTextColor: document.getElementById("buttonTextColor"),
     layoutMode: document.getElementById("layoutMode"),
     colorMode: document.getElementById("colorMode"),
     bodyBackgroundImage: document.getElementById("bodyBackgroundImage"),
@@ -141,10 +153,21 @@
 
   function bindSettings() {
     const update = () => {
+      config.branding.mark = nodes.brandMark.value.trim() || "D";
+      config.branding.name = nodes.brandName.value.trim() || "Dynamic Broski Form";
+      config.branding.textColor = nodes.brandTextColor.value;
+      config.branding.markBackground = nodes.brandMarkBackground.value;
+      config.branding.markColor = nodes.brandMarkColor.value;
       config.title = nodes.formTitle.value.trim() || "Untitled Form";
       config.description = nodes.formDescription.value.trim();
       config.submitText = nodes.submitText.value.trim() || "Submit";
       config.theme.accentColor = nodes.accentColor.value;
+      config.theme.titleColor = nodes.titleColor.value;
+      config.theme.descriptionColor = nodes.descriptionColor.value;
+      config.theme.labelColor = nodes.labelColor.value;
+      config.theme.inputBackground = nodes.inputBackground.value;
+      config.theme.inputBorder = nodes.inputBorder.value;
+      config.theme.buttonTextColor = nodes.buttonTextColor.value;
       config.theme.layout = nodes.layoutMode.value;
       config.theme.colorMode = nodes.colorMode.value;
       config.theme.bodyBackgroundImage = nodes.bodyBackgroundImage.value.trim();
@@ -159,7 +182,7 @@
       persistAndRender();
     };
 
-    [nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.layoutMode, nodes.colorMode, nodes.bodyBackgroundImage, nodes.formBackgroundImage, nodes.formBackgroundOpacity, nodes.heroMediaType, nodes.heroMediaUrl, nodes.googleEndpoint]
+    [nodes.brandMark, nodes.brandName, nodes.brandTextColor, nodes.brandMarkBackground, nodes.brandMarkColor, nodes.formTitle, nodes.formDescription, nodes.submitText, nodes.accentColor, nodes.titleColor, nodes.descriptionColor, nodes.labelColor, nodes.inputBackground, nodes.inputBorder, nodes.buttonTextColor, nodes.layoutMode, nodes.colorMode, nodes.bodyBackgroundImage, nodes.formBackgroundImage, nodes.formBackgroundOpacity, nodes.heroMediaType, nodes.heroMediaUrl, nodes.googleEndpoint]
       .forEach((input) => input.addEventListener("input", update));
   }
 
@@ -182,10 +205,21 @@
   }
 
   function syncSettings() {
+    nodes.brandMark.value = config.branding.mark;
+    nodes.brandName.value = config.branding.name;
+    nodes.brandTextColor.value = config.branding.textColor;
+    nodes.brandMarkBackground.value = config.branding.markBackground;
+    nodes.brandMarkColor.value = config.branding.markColor;
     nodes.formTitle.value = config.title;
     nodes.formDescription.value = config.description;
     nodes.submitText.value = config.submitText;
     nodes.accentColor.value = config.theme.accentColor;
+    nodes.titleColor.value = config.theme.titleColor;
+    nodes.descriptionColor.value = config.theme.descriptionColor;
+    nodes.labelColor.value = config.theme.labelColor;
+    nodes.inputBackground.value = config.theme.inputBackground;
+    nodes.inputBorder.value = config.theme.inputBorder;
+    nodes.buttonTextColor.value = config.theme.buttonTextColor;
     nodes.layoutMode.value = config.theme.layout;
     nodes.colorMode.value = config.theme.colorMode;
     nodes.bodyBackgroundImage.value = config.theme.bodyBackgroundImage;
@@ -198,13 +232,25 @@
     nodes.googleEndpointRow.hidden = false;
     nodes.builderPreviewTitle.textContent = config.title;
     nodes.githubToken.value = sessionStorage.getItem(GH_TOKEN_KEY) || "";
+    applyBranding(config);
   }
 
   function readSettingsIntoConfig() {
+    config.branding.mark = nodes.brandMark.value.trim() || "D";
+    config.branding.name = nodes.brandName.value.trim() || "Dynamic Broski Form";
+    config.branding.textColor = nodes.brandTextColor.value;
+    config.branding.markBackground = nodes.brandMarkBackground.value;
+    config.branding.markColor = nodes.brandMarkColor.value;
     config.title = nodes.formTitle.value.trim() || "Untitled Form";
     config.description = nodes.formDescription.value.trim();
     config.submitText = nodes.submitText.value.trim() || "Submit";
     config.theme.accentColor = nodes.accentColor.value;
+    config.theme.titleColor = nodes.titleColor.value;
+    config.theme.descriptionColor = nodes.descriptionColor.value;
+    config.theme.labelColor = nodes.labelColor.value;
+    config.theme.inputBackground = nodes.inputBackground.value;
+    config.theme.inputBorder = nodes.inputBorder.value;
+    config.theme.buttonTextColor = nodes.buttonTextColor.value;
     config.theme.layout = nodes.layoutMode.value;
     config.theme.colorMode = nodes.colorMode.value;
     config.theme.bodyBackgroundImage = nodes.bodyBackgroundImage.value.trim();

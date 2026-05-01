@@ -14,6 +14,13 @@
   ];
 
   const defaultConfig = {
+    branding: {
+      mark: "D",
+      name: "Dynamic Broski Form",
+      textColor: "#111827",
+      markBackground: "#111827",
+      markColor: "#ffffff"
+    },
     title: "Project Inquiry",
     description: "Tell us what you need and we will follow up with the next best step.",
     submitText: "Send Inquiry",
@@ -27,7 +34,13 @@
       heroMedia: {
         type: "none",
         url: ""
-      }
+      },
+      titleColor: "#111827",
+      descriptionColor: "#64748b",
+      labelColor: "#111827",
+      inputBackground: "#ffffff",
+      inputBorder: "#cbd5e1",
+      buttonTextColor: "#ffffff"
     },
     submission: {
       type: "googleSheets",
@@ -165,6 +178,13 @@
     const normalizedFields = ensureUniqueFieldIds(fields.map((field) => normalizeField(field, fields)));
 
     return {
+      branding: {
+        mark: input.branding && input.branding.mark ? String(input.branding.mark).trim().slice(0, 4) : "D",
+        name: input.branding && input.branding.name ? String(input.branding.name).trim() : "Dynamic Broski Form",
+        textColor: normalizeColor(input.branding && input.branding.textColor, "#111827"),
+        markBackground: normalizeColor(input.branding && input.branding.markBackground, "#111827"),
+        markColor: normalizeColor(input.branding && input.branding.markColor, "#ffffff")
+      },
       title: input.title || "Untitled Form",
       description: input.description || "",
       submitText: input.submitText || "Submit",
@@ -182,7 +202,13 @@
             ? input.theme.heroMedia.type
             : "none",
           url: input.theme && input.theme.heroMedia && input.theme.heroMedia.url ? String(input.theme.heroMedia.url).trim() : ""
-        }
+        },
+        titleColor: normalizeColor(input.theme && input.theme.titleColor, input.theme && input.theme.colorMode === "dark" ? "#f8fafc" : "#111827"),
+        descriptionColor: normalizeColor(input.theme && input.theme.descriptionColor, input.theme && input.theme.colorMode === "dark" ? "#a8b3c5" : "#64748b"),
+        labelColor: normalizeColor(input.theme && input.theme.labelColor, input.theme && input.theme.colorMode === "dark" ? "#f8fafc" : "#111827"),
+        inputBackground: normalizeColor(input.theme && input.theme.inputBackground, input.theme && input.theme.colorMode === "dark" ? "#0f172a" : "#ffffff"),
+        inputBorder: normalizeColor(input.theme && input.theme.inputBorder, input.theme && input.theme.colorMode === "dark" ? "#3f4b5f" : "#cbd5e1"),
+        buttonTextColor: normalizeColor(input.theme && input.theme.buttonTextColor, "#ffffff")
       },
       submission: {
         type: "googleSheets",
@@ -190,6 +216,11 @@
       },
       fields: normalizedFields
     };
+  }
+
+  function normalizeColor(value, fallback) {
+    const color = String(value || "").trim();
+    return /^#[0-9a-f]{6}$/i.test(color) ? color : fallback;
   }
 
   function ensureUniqueFieldIds(fields) {
@@ -278,9 +309,32 @@
   function setAccent(container, config) {
     const accent = config.theme && config.theme.accentColor ? config.theme.accentColor : "#2563eb";
     container.style.setProperty("--accent", accent);
+    container.style.setProperty("--form-title-color", config.theme.titleColor);
+    container.style.setProperty("--form-description-color", config.theme.descriptionColor);
+    container.style.setProperty("--form-label-color", config.theme.labelColor);
+    container.style.setProperty("--form-input-bg", config.theme.inputBackground);
+    container.style.setProperty("--form-input-border", config.theme.inputBorder);
+    container.style.setProperty("--form-button-text", config.theme.buttonTextColor);
     container.style.setProperty("--form-bg-opacity", config.theme.formBackgroundOpacity);
     container.style.setProperty("--form-bg-image", config.theme.formBackgroundImage ? `url("${config.theme.formBackgroundImage}")` : "none");
     document.body.style.setProperty("--body-bg-image", config.theme.bodyBackgroundImage ? `url("${config.theme.bodyBackgroundImage}")` : "none");
+  }
+
+  function applyBranding(config, root) {
+    const normalized = normalizeConfig(config);
+    const scope = root || document;
+    scope.querySelectorAll("[data-brand-mark]").forEach((node) => {
+      node.textContent = normalized.branding.mark || "D";
+    });
+    scope.querySelectorAll("[data-brand-name]").forEach((node) => {
+      node.textContent = normalized.branding.name || "Dynamic Broski Form";
+    });
+    scope.querySelectorAll(".brand").forEach((node) => {
+      node.style.setProperty("--brand-text", normalized.branding.textColor);
+      node.style.setProperty("--brand-mark-bg", normalized.branding.markBackground);
+      node.style.setProperty("--brand-mark-text", normalized.branding.markColor);
+      node.setAttribute("aria-label", `${normalized.branding.name} home`);
+    });
   }
 
   function evaluateCondition(condition, values) {
@@ -746,6 +800,7 @@
     clone,
     uniqueId,
     normalizeConfig,
+    applyBranding,
     getUniqueFieldLabels,
     saveConfig,
     loadSavedConfig,

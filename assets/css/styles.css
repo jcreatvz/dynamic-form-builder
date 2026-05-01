@@ -78,7 +78,7 @@ a {
 
 .button.primary {
   background: var(--accent);
-  color: white;
+  color: var(--form-button-text, white);
 }
 
 .button.ghost {
@@ -113,6 +113,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  color: var(--brand-text, var(--text));
   font-weight: 850;
 }
 
@@ -122,8 +123,8 @@ a {
   height: 34px;
   place-items: center;
   border-radius: var(--radius);
-  background: var(--text);
-  color: white;
+  background: var(--brand-mark-bg, var(--text));
+  color: var(--brand-mark-text, white);
 }
 
 .app-topbar,
@@ -612,14 +613,21 @@ input[type="color"] {
 .dynamic-form.theme-dark textarea,
 .dynamic-form.theme-dark select,
 .dynamic-form.theme-dark .choice-pill {
-  border-color: #3f4b5f;
-  background: #0f172a;
+  border-color: var(--form-input-border, #3f4b5f);
+  background: var(--form-input-bg, #0f172a);
   color: #f8fafc;
 }
 
 .dynamic-form.theme-dark input::placeholder,
 .dynamic-form.theme-dark textarea::placeholder {
   color: #7d8ba1;
+}
+
+.dynamic-form input,
+.dynamic-form textarea,
+.dynamic-form select {
+  border-color: var(--form-input-border, #cbd5e1);
+  background: var(--form-input-bg, white);
 }
 
 @keyframes formIn {
@@ -669,6 +677,7 @@ input[type="color"] {
 .form-header h1,
 .result-state h1 {
   margin: 0;
+  color: var(--form-title-color, var(--text));
   font-size: clamp(1.8rem, 4vw, 3rem);
   line-height: 1.05;
   letter-spacing: 0;
@@ -677,7 +686,7 @@ input[type="color"] {
 .form-header p,
 .result-state p {
   margin: 12px 0 0;
-  color: var(--muted);
+  color: var(--form-description-color, var(--muted));
   line-height: 1.65;
 }
 
@@ -754,6 +763,7 @@ input[type="color"] {
 
 .field-label {
   display: block;
+  color: var(--form-label-color, var(--text));
   font-weight: 850;
 }
 
@@ -794,10 +804,10 @@ input[type="color"] {
   align-items: center;
   gap: 8px;
   min-height: 42px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--form-input-border, #cbd5e1);
   border-radius: var(--radius);
   padding: 9px 12px;
-  background: white;
+  background: var(--form-input-bg, white);
   cursor: pointer;
   font-weight: 700;
 }

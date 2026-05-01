@@ -6,7 +6,8 @@
     collectValues,
     validateValues,
     getDynamicDependencyIds,
-    submitToGoogleSheets
+    submitToGoogleSheets,
+    applyBranding
   } = window.FormStudio;
 
   const container = document.getElementById("publicForm");
@@ -24,10 +25,12 @@
       if (!config) {
         config = await loadStaticConfig();
       }
+      applyBranding(config);
       render();
     } catch (error) {
       config = loadSavedConfig();
       if (config) {
+        applyBranding(config);
         render();
       } else {
         showError();

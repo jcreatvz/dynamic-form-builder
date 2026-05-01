@@ -16,7 +16,9 @@ Live site: https://jcreatvz.github.io/dynamic-form-builder/
 ## Builder Features
 
 - Lightweight builder login gate for one temporary account
+- Editable brand mark, brand name, and brand colors
 - Form theme mode: light or dark
+- Basic form style controls for title, description, labels, inputs, accent, and button text
 - Advanced select displays: dropdown, option list, or multi-select
 - Section fields for grouping related questions
 - Conditional visibility rules for showing fields based on previous answers
