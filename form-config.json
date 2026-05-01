@@ -1,9 +1,16 @@
 {
-  "title": "Project Inquiry",
+  "branding": {
+    "mark": "DD",
+    "name": "Broski Form",
+    "textColor": "#000000",
+    "markBackground": "#8a1c00",
+    "markColor": "#ffffff"
+  },
+  "title": "Quickie Inquiry",
   "description": "Tell us what you need and we will follow up with the next best step.",
   "submitText": "SUBMIT",
   "theme": {
-    "accentColor": "#2563eb",
+    "accentColor": "#eb2424",
     "layout": "single",
     "colorMode": "dark",
     "bodyBackgroundImage": "",
@@ -11,8 +18,14 @@
     "formBackgroundOpacity": 0.15,
     "heroMedia": {
       "type": "video",
-      "url": "https://www.youtube.com/watch?v=5URefVYaJrA"
-    }
+      "url": "https://www.youtube.com/watch?v=Ivwhd1TTh70"
+    },
+    "titleColor": "#f8fafc",
+    "descriptionColor": "#a8b3c5",
+    "labelColor": "#f8fafc",
+    "inputBackground": "#0f172a",
+    "inputBorder": "#3f4b5f",
+    "buttonTextColor": "#ffffff"
   },
   "submission": {
     "type": "googleSheets",
@@ -114,14 +127,6 @@
         }
       ],
       "display": "dropdown"
-    },
-    {
-      "id": "section",
-      "type": "section",
-      "label": "Section Title",
-      "placeholder": "",
-      "helper": "Optional section description.",
-      "required": false
     }
   ]
 }
