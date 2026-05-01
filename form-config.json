@@ -16,7 +16,7 @@
   },
   "submission": {
     "type": "googleSheets",
-    "googleEndpoint": "https://script.google.com/macros/s/AKfycbxEsgD-PteNwp7duQn-CrZHZ5dLd3D19gNVYxZYLROa7Slv0CHBi4GYEnEOGPHQukxysQ/exec"
+    "googleEndpoint": "https://script.google.com/macros/s/AKfycbz825bb8xYwjdYuTkFlAiPd2_DApICs_dOcLnLHiO3DmioSlLFEEKQ902i_6y4U7dKieg/exec"
   },
   "fields": [
     {
