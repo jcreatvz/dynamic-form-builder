@@ -638,6 +638,7 @@ input[type="color"] {
 }
 
 .form-hero-media {
+  position: relative;
   overflow: hidden;
   margin-bottom: 20px;
   border-radius: 10px;
@@ -653,6 +654,16 @@ input[type="color"] {
   height: 100%;
   border: 0;
   object-fit: cover;
+}
+
+.form-hero-media iframe.youtube-embed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 132%;
+  height: 132%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
 .form-header h1,

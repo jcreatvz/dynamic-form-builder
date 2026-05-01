@@ -74,7 +74,7 @@ Form settings support public URLs for:
 - Form wrapper background image with opacity
 - Hero image or direct video URL before the form heading
 
-Use direct public image/video URLs such as `.jpg`, `.png`, `.webp`, or `.mp4`. Direct videos autoplay muted, loop, and hide controls. YouTube watch, short, live, embed, and `youtu.be` links are also supported and are converted into muted autoplay looping hero videos. Browser autoplay generally requires the video to be muted.
+Use direct public image/video URLs such as `.jpg`, `.png`, `.webp`, or `.mp4`. Direct videos autoplay muted, loop, and hide controls. YouTube watch, short, live, embed, and `youtu.be` links are also supported and are converted into muted autoplay looping hero videos. Browser autoplay generally requires the video to be muted. YouTube may still inject branding or playback overlays; the renderer crops and disables pointer events on the embed to keep it closer to a decorative banner, but a direct video file is the cleanest option when no visible player UI is required.
 
 ## Temporary GitHub Publishing
 

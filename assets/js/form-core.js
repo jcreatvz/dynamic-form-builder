@@ -567,7 +567,8 @@
       const youtubeId = getYouTubeId(media.url);
       if (youtubeId) {
         const iframe = document.createElement("iframe");
-        iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&playsinline=1&modestbranding=1&rel=0`;
+        iframe.className = "youtube-embed";
+        iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&disablekb=1&fs=0&iv_load_policy=3&playsinline=1&modestbranding=1&rel=0`;
         iframe.title = "Hero video";
         iframe.loading = "lazy";
         iframe.allow = "autoplay; encrypted-media; picture-in-picture";
